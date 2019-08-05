@@ -1,0 +1,52 @@
+* protein solvation component
+*
+
+!dimension chsize 4000000 maxres 4000000
+
+stream /home/simone/opt/ff/charmmff.str
+
+! Read psf and cor
+read psf  card name protein.psf
+read coor pdb  name protein.pdb resid
+
+! Solvation radius
+set buf 12.0
+
+! Define the solute -- including crystallographic water
+define solute sele all end
+coor orie sele solute end
+coor stat sele solute end
+
+! compute center of water box
+calc xmin = ?xmin
+calc ymin = ?ymin 
+calc zmin = ?zmin 
+calc xmax = ?xmax
+calc ymax = ?ymax 
+calc zmax = ?zmax 
+
+update atom cutnb 15 ctonnb 10 ctofnb 12 vdw vshift fshift cdie
+
+nobomb
+set overlap 2.5
+stream /home/simone/opt/scripts/charmm/build/wcubefast.str
+rename segid wat select segid w* end ! rename all waters
+
+!cons harm force 30 select solute .and. .not. hydrogen end
+!mini conj nstep 10
+!mini abnr nstep 10
+ 
+!label unconstrained_mini ! no constraints in reaction zone 
+!cons harm clear
+!mini conj nstep 10
+!minimize abnr nstep 10
+
+write psf  card name solvated.psf
+write coor card name solvated.cor
+* solvated in a box of dimension
+* xmin=@xmi ymin=@ymi zmin=@zmi 
+* xmax=@xma ymax=@yma zmax=@zma 
+* a=@xl     b=@yl     z=@zl
+*
+
+stop

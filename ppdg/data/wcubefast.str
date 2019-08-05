@@ -1,0 +1,116 @@
+* script to create a water box of prescribed dimensions; i.e. to solvate a protein
+*
+! NAMES WAT* must not be taken
+!
+!
+
+if @?buf eq 0 set buf 10 ! buffer region on each side
+if @?overlap eq 0 set overlap 2.8
+if @?xmin eq 0 set xmin -10
+if @?ymin eq 0 set ymin -10
+if @?zmin eq 0 set zmin -10
+if @?xmax eq 0 set xmax  10
+if @?ymax eq 0 set ymax  10
+if @?zmax eq 0 set zmax  10
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! read initial water box (216 molecules)
+set nwatres 216     ! number of solvent residues
+set boxsize 18.856  ! size of cubic solvent box
+!
+read sequ tip3 @nwatres
+generate wat0 noangle nodihe
+stream /home/simone/opt/scripts/charmm/build/read-watbox.str ! this script written by nilssen
+rename segid w0 sele segid wat0 end ! this will be the template box
+
+calc xmi = @xmin - @buf 
+calc xma = @xmax + @buf 
+calc ymi = @ymin - @buf 
+calc yma = @ymax + @buf 
+calc zmi = @zmin - @buf 
+calc zma = @zmax + @buf 
+!
+calc xl = ( @xma - @xmi ) ! diameter
+calc yl = ( @yma - @ymi ) ! diameter
+calc zl = ( @zma - @zmi ) ! diameter
+!
+!************ make into a cube
+set l @xl
+if  @yl .gt. @l  set l @yl 
+if  @zl .gt. @l  set l @zl 
+calc xmi = @xmi - 0.5 * ( @l - @xl )
+calc xma = @xma + 0.5 * ( @l - @xl )
+calc ymi = @ymi - 0.5 * ( @l - @yl )
+calc yma = @yma + 0.5 * ( @l - @yl )
+calc zmi = @zmi - 0.5 * ( @l - @zl )
+calc zma = @zma + 0.5 * ( @l - @zl )
+set xl @l
+set yl @l
+set zl @l
+!****************** CUBE ******************
+!
+calc nx = int (@xl/@boxsize + 1 )
+calc ny = int (@yl/@boxsize + 1 )
+calc nz = int (@zl/@boxsize + 1 )
+
+calc nbox = @nx*@ny*@nz
+!
+! generate a single huge water segment (faster than replicate)
+calc nwat = @nbox * @nwatres
+read sequ tip3 @nwat
+generate wat0 noangle nodihe
+stream /home/simone/opt/scripts/charmm/build/read-watbox.str
+! move boxes around
+define w0 sele segid w0 end
+set offset = 0
+
+set index 0
+set i 0
+label mx
+ set j 0
+ set k 0
+ label my
+  set k 0
+  label mz
+
+   calc w1b = @offset + 1
+   calc w1e = @offset + @nwatres
+   define w1 sele segid wat0 .and. resi @w1b : @w1e end
+   coor dupl sele w0 end sele w1 end
+
+   calc xdisp = ( @i * @boxsize + @xmi + @{boxsize}/2 ) ! move 
+   calc ydisp = ( @j * @boxsize + @ymi + @{boxsize}/2 ) ! move 
+   calc zdisp = ( @k * @boxsize + @zmi + @{boxsize}/2 ) ! move 
+
+   scalar X add @xdisp select w1 end
+   scalar Y add @ydisp select w1 end
+   scalar Z add @zdisp select w1 end
+  
+   incr index by 1
+   calc offset = @offset + @nwatres
+   incr k by 1
+   if @k lt @nz -
+  goto mz
+  incr j by 1
+  if @j lt @ny -
+ goto my
+ incr i by 1
+ if @i lt @nx -
+goto mx
+
+! delete template box
+delete atom sele segid w0 end
+
+! delete molecules that are outside the box
+delete atom select .byres. (segid *w* .and. resname TIP3 .and. type OH2 .and. - ! two stars delete xwat also
+(  property x .lt. @xmi .or. property x .gt. @xma .or. -
+   property y .lt. @ymi .or. property y .gt. @yma .or. -
+   property z .lt. @zmi .or. property z .gt. @zma ) ) end
+
+! delete molecules overlapping with solute
+delete atom select .byres. (segid w* .and. resname TIP3 .and. type OH2 .and. -
+                           ( (solute .and. .not. (hydrogen .or. lone) ) .around. @overlap ) ) end
+
+join wat0 renu ! eliminate sequence gaps
+

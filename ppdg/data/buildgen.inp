@@ -1,0 +1,66 @@
+* Generic script to build a multi-chain protein
+* nc = 5 : number of chains
+* c1 = A, c2 = B, c3 = H, ... cn = L : the ID of the different chains in order
+* name = chain_ : the base name for the chain files
+* out = mysystem : outname for psf/cor/pdb
+*
+
+! Read FF topology and parameters
+stream /home/simone/opt/ff/charmmff.str
+
+! Loop over all chains
+set n 1
+label loop_read
+
+    ! Generate the protein sequence (without patching)
+    read sequ pdb name @name@c@@n.pdb
+    generate @c@@n setup first none last none
+
+    ! Patch first residue
+    define firstatom sele segid @c@@n .and. resid 1 end
+    if ?SELRESN .eq. GLY then
+        patch GLYP @c@@n 1 setup
+    else
+        if ?SELRESN .eq. PRO then
+            patch PROP @c@@n 1 setup
+        else
+            patch NTER @c@@n 1 setup
+        endif 
+    endif 
+
+    ! Patch last residue
+    patch CTER @c@@n ?SQNRES setup
+
+    ! Read coordinates
+    read coor pdb name @name@c@@n.pdb resid
+    incr n by 1
+    if @n .le. @nc goto loop_read
+
+! Build missing coordinates from IC table
+ic param 
+ic fill preserve
+ic build
+
+! Fix hydrogen position and check chirality
+coor chir check
+coor init sele hydrogen end
+hbuild
+coor chir check
+
+! Add disulfides bonds
+stream disu.str
+autogen angl dihe
+
+! Minimize
+mini sd nsteps 100
+mini abnr nsteps 100
+coor chir check
+
+! Write coordinates and topology
+write psf  card name @out.psf
+write coor card name @out.cor
+write coor pdb  name @out.pdb
+
+stop
+
+

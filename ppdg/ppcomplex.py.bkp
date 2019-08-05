@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+
+import ppdg
+import os, json
+import numpy as np
+import logging
+log = logging.getLogger(__name__)
+
+class PPComplex():
+
+    def __init__(self, name, template, ligand, receptor, ligand_seq=None, receptor_seq=None):
+        '''
+            Initialize the PDB structure to use as template and the target sequence.
+            name: unique ID for this complex
+            template: a pdb file or PDB:XXXX to use as template
+            ligand/receptor: chain IDs of the chains to use as ligand/receptor
+            ligand/receptor_seq: sequence file or sequence of the ligand/receptor; 
+                    if not specified the sequence from the template is used
+        '''
+
+        # Name/ID for the complex
+        self.name = name
+
+        # Pdb structures for ligand, receptor and complex, saved as Pdb() objects
+        orig = ppdg.Pdb(template)
+        orig.keep_protein_only()
+        self.lig = ppdg.Pdb()
+        for chain in ligand:
+            self.lig += orig.extract(chain)
+        self.rec = ppdg.Pdb()
+        for chain in receptor:
+            self.rec += orig.extract(chain)
+        self.cpx = self.rec + self.lig
+
+        # Target sequences
+        if ligand_seq:
+            self.lig_seq = ligand_seq
+        else:
+            self.lig_seq = self.lig.get_sequence()
+        if receptor_seq:
+            self.rec_seq = receptor_seq
+        else:
+            self.rec_seq = self.rec.get_sequence()
+        self.cpx_seq = self.rec_seq + '/' + self.lig_seq
+
+        # Chains for ligand and receptor
+        self.lig_chains = ligand
+        self.rec_chains = receptor
+
+        # Working directory
+        self.wrkdir = os.path.join(ppdg.WRKDIR, self.name.replace('/', '-').replace(' ', '-').lower())
+
+        # Descriptors
+        self.descriptors = {}
+        self.descriptors_changed = False
+        self.read_descriptors()
+
+
+    def read_descriptors(self):
+        """
+            Read descriptors from file. File is stored in working directory.
+        """
+        scorefile = os.path.join(self.wrkdir, "descriptors.json")
+        if os.path.isfile(scorefile):
+            log.info("Reading descriptors from %s" % (scorefile))
+            with open(scorefile, 'r') as fp:
+                self.descriptors = json.load(fp)
+
+    def save_descriptors(self):
+        """
+            Save descriptors to file in working directory.
+            Save to disk only if some descriptor changed.
+        """
+        scorefile = os.path.join(self.wrkdir, "descriptors.json")
+        if self.descriptors_changed:
+            log.info("Writing descriptors to file %s" % (scorefile))
+            with open(scorefile, 'w') as fp:
+                json.dump(self.descriptors, fp, indent=4)
+            self.descriptors_changed = False
+
+    def make_model(self, protocol, index, charmify=False, solvate=False):
+        """
+            Build a molecular model of the protein protein complex
+            using the specified protocol and the given index.
+        """
+        wrkdir = os.path.join(self.wrkdir, protocol+'_%d' % index)
+        ppdg.makemodel.make_model(wrkdir, protocol, self.cpx, self.cpx_seq)
+        ppdg.makemodel.split_model(wrkdir, self.lig_chains, self.rec_chains)
+        #if charmify:
+        #    ppdg.makemodel.charmify(os.path.join(wrkdir, 'model.pdb'))
+        #if solvate:
+        #    ppdg.makemodel.solvate(os.path.join(wrkdir, 'receptor'))
+        #    ppdg.makemodel.solvate(os.path.join(wrkdir, 'ligand'))
+        #    ppdg.makemodel.solvate(os.path.join(wrkdir, 'complex'), align=True)
+
+    def eval_desc(self, protocol, index, desc_list):
+        """
+            Compute all descriptors in desc_list for the given protocol/index.
+            If a descriptor is already in self.descriptors, do not recompute it.
+        """
+        desc_wanted = []
+        for desc in desc_list:
+            try:
+                score = self.descriptors[protocol][desc][str(index)]
+            except KeyError:
+                desc_wanted.append(desc)
+        if len(desc_wanted)==0:
+            return
+        log.info('Computing %s for protocol %s and index %d' % (str(desc_wanted), protocol, index))
+        wrkdir = os.path.join(self.wrkdir, protocol+'_%d' % (index))
+        scores = ppdg.scoring.evaluate(wrkdir, desc_wanted)
+        print(scores)
+        if not protocol in self.descriptors:
+            self.descriptors[protocol] = {}
+        for desc in scores.keys():
+            if not desc in self.descriptors[protocol]:
+                self.descriptors[protocol][desc] = {}
+        for desc, score in scores.items():
+            self.descriptors[protocol][desc][str(index)] = score
+        self.descriptors_changed = True
+
+    def eval(self, protocol, desc_list, nmodels):
+        """
+            Evaluate all descriptors in desclist, using the given protocol
+            to build the models. Make an average over nmodels.
+        """
+        for ndx in range(nmodels):
+            self.make_model(protocol, ndx, charmify=False, solvate=False)
+            self.eval_desc(protocol, ndx, desc_list)
+        self.save_descriptors()
+        scores = {}
+        for desc in desc_list:
+            lst = np.array([ v for k,v in self.descriptors[protocol][desc].items() ])
+            avg = np.mean(lst)
+            std = np.std(lst)
+            err = std/np.sqrt(len(lst))
+            #print('%-10s %8.3f %8.3f %8.3f' % (desc, avg, std, err))
+            scores[desc] = [avg, std, err]
+        return scores
+
+

@@ -1,0 +1,25 @@
+* Given a complete psf/cor, extract a selection of atoms and create a new
+* psf/cor
+* basename = @basename
+* outname = @outname
+* sel = @sel
+*
+
+! Read FF topology and parameters
+stream /home/simone/opt/ff/charmmff.str
+
+! Read original psf/cor
+read psf card name @basename.psf
+read coor card name @basename.cor
+
+! Delete all but given selection
+delete atoms sele .not. ( @sel ) end
+
+! Write selection
+write psf card name @outname.psf
+write coor card name @outname.cor
+write coor pdb name @outname.pdb
+
+stop
+
+

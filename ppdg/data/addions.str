@@ -1,0 +1,48 @@
+* SCRIPT TO replace some waters with ions
+*
+
+define replacement select @candidates .and. type OH2 end ! select num of water molecules
+set repl ?nsel ! number of replacement candidates
+if @repl .lt. @ionsneeded system "echo ADD_ION ERROR: SELECTION NOT BIG ENOUGH TO ACCOMODATE @IONSNEEDED IONS, SKIPPING..."
+if @repl .lt. @ionsneeded goto skip_ion
+
+calc nion_int = INT ( @ionsneeded )
+
+if @ionsneeded .eq. 0 goto skip_ion   ! nothing to do: system is neutral
+if @{nion_int} .ne. @ionsneeded system "echo ADD_ION ERROR: SYSTEM CHARGE NOT AN INTEGER, SKIPPING..."
+if @{nion_int} .ne. @ionsneeded goto skip_ion
+
+! proceed with replication
+read sequence @ion @ionsneeded ! generate @nion of @ion
+gene ion@ionseg
+coor set xdir 1.0 dist 0 select segid ion@ionseg end ! assign arbitrary positions to avoid bombing on atom selections
+
+! next three commands put the water segment at the end of PSF
+replicate nrep 1 X select segid WAT end ! replicate water segment 
+delete atom select segid WAT end        ! this deletes the solvent segment
+rename segid WAT select segid X1 end    ! put the waters back at the end of the file
+
+define candidates select @candidates end ! save selection (in case it takes a while to compute)
+replicate nrep 1 X select candidates end ! duplicate all replaceable waters into a new segment
+rename segid wrpl select segid X1 end
+delete atom select candidates end      ! delete replaceable atoms from original water group
+
+join wrpl renu ! renumber residues
+
+set inum 1
+label add_ion
+ calc i = int ( ?rand * @repl ) + 1
+ coor dupl select atom wrpl @i OH2 end sele atom ion@ionseg @inum @ion end ! set ion coordinate
+ delete atom select atom wrpl @i * end ! delete that water residue 
+ 
+ incr repl by -1
+ incr inum by 1
+ join wrpl renumber ! renumber waters so there are no gaps
+ 
+ if @inum .le. @ionsneeded -
+goto add_ion
+
+if @repl .ne. 0 join WAT wrpl renu
+
+label skip_ion 
+

@@ -1,0 +1,64 @@
+* Script to add ions into a solvated box by replacing some waters 
+*
+
+!dimension chsize 8000000 maxres 8000000
+
+stream /home/simone/opt/ff/charmmff.str
+
+! Read psf and cor
+read psf  card name solvated.psf
+read coor card name solvated.cor
+
+! add ions
+! replace some of the atoms in the selection below
+! need to define replacement candidates & set "ionsneeded" & "ion"; segment wat needs to contain solvent molecules
+! ionseg is the number of ion segment
+
+set protein ( .not. segid WAT )
+scalar wcomp set 0 select all end
+scalar wcomp set 1 select @protein end ! this avoids long strings, which might bomb CHARMM
+set protein ( prop wcomp .eq. 1 )
+
+set candidates  .byres. (.not. ( @protein .around. 5 ) ) .and. segid wat
+
+define waters select segid wat .and. type OH2 end
+set nwat ?nsel
+
+set istrength 0.15 ! 0.150 mM
+!calc totion = int ( ?nsel * @istrength / ( 55 + @istrength ) )
+! account for ions already present:
+define ipresent select segid ion* end
+calc totion = int ( @nwat * @istrength / ( 55 + @istrength ) ) - ?nsel
+
+! see if we can put enough ions to cancel the charge & maintain proper ion conc.
+calc flag = @totion - abs ( ?CGTOT )
+if flag lt 0 set totion abs ( ?CGTOT )
+ 
+calc positive = int ( 0.5 * ( @totion - ?CGTOT ) )
+calc negative = @positive + ?CGTOT  
+
+!
+! add potassium
+set ionsneeded  @positive
+set ion SOD
+set ionseg 1
+stream /home/simone/opt/scripts/charmm/build/addions.str
+
+! add chlorine
+set ionsneeded  @negative
+set ion CLA
+set ionseg 2
+stream /home/simone/opt/scripts/charmm/build/addions.str
+!
+
+write psf  card name ionized.psf
+write coor card name ionized.cor  
+write coor pdb  name ionized.pdb
+
+
+!if ( ?CGTOT .ae. 0 ) system "echo ERROR: could not balance charge"
+
+show ?CGTOT
+
+stop
+

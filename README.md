@@ -1,2 +1,6 @@
+
 # ppdg
-Tools to study protein-protein binding
+
+Build protein-protein complexes and calculate binding affinity.
+
+
