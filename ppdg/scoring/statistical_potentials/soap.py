@@ -22,7 +22,7 @@ def soap_pp(wrkdir):
     log.info("Getting SOAP-PP-Pair scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')
 
-    with open("soap_pp_pair.out", "w") as fp:
+    with open(os.path.join(wrkdir, "soap_pp_pair.out"), "w") as fp:
         _stdout = sys.stdout
         sys.stdout = fp
         env = modeller.environ()
@@ -62,7 +62,7 @@ def soap_protein_od(wrkdir):
     log.info("Getting SOAP-Protein-OD scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')
 
-    with open("soap_protein_od.out", "w") as fp:
+    with open(os.path.join(wrkdir, "soap_protein_od.out"), "w") as fp:
         _stdout = sys.stdout
         sys.stdout = fp
         env = modeller.environ()

@@ -19,7 +19,7 @@ def dope(wrkdir):
     log.info("Getting DOPE and DOPE-HR scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')
 
-    with open("dope.out", "w") as fp:
+    with open(os.path.join(wrkdir, "dope.out"), "w") as fp:
         _stdout = sys.stdout
         sys.stdout = fp
         env = modeller.environ()

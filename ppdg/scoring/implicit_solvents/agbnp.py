@@ -38,7 +38,7 @@ def agbnp(wrkdir):
     log.info("Getting AGBNP scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')
 
-    with open("agbnp.out", "w") as fp:
+    with open(os.path.join(wrkdir, "agbnp.out"), "w") as fp:
         _stdout = sys.stdout
         sys.stdout = fp
         env = modeller.environ()
