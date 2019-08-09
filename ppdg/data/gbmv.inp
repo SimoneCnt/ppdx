@@ -1,0 +1,21 @@
+* Calculate energy
+* @sysname 
+*
+
+! Load the force field
+stream /home/simone/opt/ff/charmmff.str
+
+read psf  card name @sysname.psf
+read coor card name @sysname.cor
+
+scalar wmain = radii 
+
+nbond atom cdiel switch vatom vswitch cutnb 20.0 ctofnb 18.0 ctonnb 16.0
+gbmv shift -0.1 watr 1.4 P6 8.0 lambda 0.5 bufr 0.0 sa 0.007 P1 0.45 P2 1.25 P3 0.65 fast 1 sxd 0.3
+
+mini abnr nsteps 100
+
+ener
+
+stop
+

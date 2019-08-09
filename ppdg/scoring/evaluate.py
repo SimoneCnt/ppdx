@@ -27,6 +27,11 @@ def all_descriptors():
     desc += ['DOPE', 'DOPE-HR']
     # Implicit Solvents
     desc += ['AGBNP']
+    desc += ['FACTS_ELEC', 'FACTS_VDW', 'FACTS_GB', 'FACTS_ASP']
+    desc += ['GBMV_ELEC', 'GBMV_VDW', 'GBMV_GB', 'GBMV_ASP']
+    desc += ['GBSW_ELEC', 'GBSW_VDW', 'GBSW_GB', 'GBSW_ASP']
+    desc += ['CDIE_ELEC', 'CDIE_VDW']
+    desc += ['RDIE_ELEC', 'RDIE_VDW']
     # Folding
     desc += ['FoldX', 'FoldX_backbone_hbond', 'FoldX_sidechain_hbond', 'FoldX_vdw', 
                 'FoldX_elec', 'FoldX_solvation_polar', 'FoldX_solvation_hydrophobic', 
@@ -91,6 +96,16 @@ def evaluate(wrkdir, desc_wanted, scores=dict()):
     # Implicit Solvents
     if 'AGBNP' in desc_set:
         scores.update(implicit_solvents.agbnp(wrkdir))
+    if len(desc_set & set(['FACTS_ELEC', 'FACTS_VDW', 'FACTS_GB', 'FACTS_ASP']))>0:
+        scores.update(implicit_solvents.facts(wrkdir))
+    if len(desc_set & set(['GBMV_ELEC', 'GBMV_VDW', 'GBMV_GB', 'GBMV_ASP']))>0:
+        scores.update(implicit_solvents.gbmv(wrkdir))
+    if len(desc_set & set(['GBSW_ELEC', 'GBSW_VDW', 'GBSW_GB', 'GBSW_ASP']))>0:
+        scores.update(implicit_solvents.gbsw(wrkdir))
+    if len(desc_set & set(['CDIE_ELEC', 'CDIE_VDW']))>0:
+        scores.update(implicit_solvents.cdie(wrkdir))
+    if len(desc_set & set(['RDIE_ELEC', 'RDIE_VDW']))>0:
+        scores.update(implicit_solvents.rdie(wrkdir))
 
     # Folding scores
     if len(desc_set & set(['FoldX', 'FoldX_backbone_hbond', 'FoldX_sidechain_hbond', 'FoldX_vdw', 
@@ -114,7 +129,7 @@ def evaluate(wrkdir, desc_wanted, scores=dict()):
     calculated = set(scores.keys())
     diff = desc_set - calculated
     if len(diff)>0:
-        raise ValueError('Unknown descriptors %s' % (str(diff)))
+        raise ValueError('Unknown descriptors %s. Available descriptors are: %s' % (str(diff), str(all_descriptors())))
 
     # Return
     return scores
