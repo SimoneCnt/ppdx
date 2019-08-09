@@ -17,14 +17,14 @@ def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None):
         desc_list = ppdg.scoring.all_descriptors()
     descfile = os.path.join(wrkdir, 'descriptors.json')
     if not os.path.isfile(descfile):
-        raise "Missing file descriptors.json in directory %s\nBe sure to have call get_descriptors before!" % (wrkdir)
+        raise ValueError("Missing file descriptors.json in directory %s\nBe sure to have call get_descriptors before!" % (wrkdir))
     log.info("Reading descriptors from %s" % (descfile))
     with open(descfile, 'r') as fp:
         alldesc = json.load(fp)
     if protocol in alldesc:
         descriptors = alldesc[protocol]
     else:
-        raise "Could not find protocol %s in %s\nBe sure to have call get_descriptors before!" % (protocol, wrkdir)
+        raise ValueError("Could not find protocol %s in %s\nBe sure to have call get_descriptors before!" % (protocol, wrkdir))
     scores = dict()
     for desc in desc_list:
         if nmodels:
