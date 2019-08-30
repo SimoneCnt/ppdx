@@ -40,7 +40,7 @@ def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None):
     return scores
 
 
-def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wanted, nmodels):
+def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wanted, nmodels, force_calc=False):
     """
         Main function!
         Given:
@@ -92,7 +92,7 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
             desc_have = desc_flat[str(i)]
         else:
             desc_have = dict()
-        scores = _get_descriptors_core(wrkdir, protocol, template, sequence, nchains, desc_have, desc_wanted)
+        scores = _get_descriptors_core(wrkdir, protocol, template, sequence, nchains, desc_have, desc_wanted, force_calc)
         desc_flat[str(i)] = scores
 
     # Write descriptors to file
@@ -105,7 +105,7 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
     return alldesc
 
 
-def _get_descriptors_core(wrkdir, protocol, template, sequence, nchains, desc, desc_wanted):
+def _get_descriptors_core(wrkdir, protocol, template, sequence, nchains, desc, desc_wanted, force_calc=False):
     """
         Core function to make one model and get the descriptors.
         Do not call this directly, but use get_descriptors.
@@ -113,7 +113,7 @@ def _get_descriptors_core(wrkdir, protocol, template, sequence, nchains, desc, d
     scores = ppdg.makemodel.make_model(wrkdir, protocol, template, sequence)
     ppdg.makemodel.charmify(os.path.join(wrkdir, 'model.pdb'))
     ppdg.makemodel.split_complex(wrkdir, nchains)
-    scores2 = ppdg.scoring.evaluate(wrkdir, desc_wanted, desc)
+    scores2 = ppdg.scoring.evaluate(wrkdir, desc_wanted, desc, force_calc)
     scores.update(scores2)
     return scores
 

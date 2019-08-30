@@ -47,7 +47,7 @@ def enm_entropy(fname, K=50.0, cutoff=7.0, spring='constant'):
     """
 
     pdb_all = ppdg.Pdb(fname)
-    pdb_all.extract_ca()
+    pdb_all.remove_hydrogens()
     pdb = [ [atom.x, atom.y, atom.z] for atom in pdb_all.atoms ]
 
     def spring_constant(k,d):

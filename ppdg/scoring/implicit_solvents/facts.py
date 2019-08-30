@@ -14,7 +14,6 @@ def run_facts(fname):
     with open('%s-facts.err' % (fname), 'w') as fp:
         fp.write(err)
     if ret!=0:
-        os.chdir(basepath)
         raise ValueError("Charmm failed while running < %s >." % (cmd))
     for line in out.splitlines():
         if line.startswith('ENER EXTERN>'):
@@ -46,6 +45,7 @@ def facts(wrkdir):
     desc['FACTS_ASP']  = cpx_asp - (rec_asp + lig_asp)
     time_end = timer()
     desc['>TIME_FACTS'] = time_end - time_start
+    os.chdir(basepath)
 
     return desc
 

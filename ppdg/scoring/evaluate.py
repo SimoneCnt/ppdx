@@ -20,6 +20,7 @@ def all_descriptors():
     # Docking
     desc += ['ZRANK', 'ZRANK2']
     desc += ['pyDock', 'pyDock_elec', 'pyDock_vdw', 'pyDock_desolv']
+    desc += ['ATTRACT']
     # Statistical Potentials
     desc += ['RF_HA_SRS', 'RF_CB_SRS_OD']
     desc += ['ipot_aace167', 'ipot_aace18', 'ipot_aace20', 'ipot_rrce20']
@@ -36,19 +37,20 @@ def all_descriptors():
     desc += ['FoldX', 'FoldX_backbone_hbond', 'FoldX_sidechain_hbond', 'FoldX_vdw', 
                 'FoldX_elec', 'FoldX_solvation_polar', 'FoldX_solvation_hydrophobic', 
                 'FoldX_entropy_sidechain', 'FoldX_entropy_mainchain']
+    desc += ['Rosetta_dg', 'Rosetta_sasa', 'Rosetta_hbonds']
     # Entropy
-    desc += ['ENM_R6', 'ENM_EXP']
+    #desc += ['ENM_R6', 'ENM_EXP']
     # Binding
     desc += ['Prodigy_IC_NIS']
     #desc += ['LISA']
     return desc
  
 
-def evaluate(wrkdir, desc_wanted, scores=dict()):
+def evaluate(wrkdir, desc_wanted, scores=dict(), force_calc=False):
 
     desc_set = set()
     for desc in desc_wanted:
-        if desc not in scores.keys():
+        if desc not in scores.keys() or force_calc:
             desc_set.add(desc)
     #print('Wanted : ', desc_wanted)
     #print('Have   : ', scores.keys())
@@ -72,6 +74,8 @@ def evaluate(wrkdir, desc_wanted, scores=dict()):
         scores.update(docking.zrank2(wrkdir))
     if len(desc_set & set(['pyDock', 'pyDock_elec', 'pyDock_vdw', 'pyDock_desolv']))>0:
         scores.update(docking.pydock(wrkdir))
+    if 'ATTRACT' in desc_set:
+        scores.update(docking.attract(wrkdir))
 
     # Statistical Potentials
     if 'RF_HA_SRS' in desc_set:
@@ -112,6 +116,8 @@ def evaluate(wrkdir, desc_wanted, scores=dict()):
         'FoldX_elec', 'FoldX_solvation_polar', 'FoldX_solvation_hydrophobic', 'FoldX_entropy_sidechain', 
         'FoldX_entropy_mainchain']))>0:
         scores.update(folding.foldx(wrkdir))
+    if len(desc_set & set(['Rosetta_dg', 'Rosetta_sasa', 'Rosetta_hbonds']))>0:
+        scores.update(folding.rosetta(wrkdir))
 
     # Entropy scores
     if 'ENM_R6' in desc_set:

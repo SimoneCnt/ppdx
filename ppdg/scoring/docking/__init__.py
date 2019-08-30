@@ -2,4 +2,5 @@
 
 from .zrank import zrank, zrank2
 from .pydock import pydock
+from .attract import attract
 

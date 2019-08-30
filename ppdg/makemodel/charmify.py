@@ -13,7 +13,7 @@ def charmify(fname):
     basename = ''.join(name.split('.')[0:-1]) + '-chm'
 
     if os.path.isfile(os.path.join(wrkdir, basename+'.psf')):
-        log.info('Charmm outputs already present, recycling data!')
+        #log.info('Charmm outputs already present, recycling data!')
         return
     else:
         log.info("Charmify-ing pdb %s" % (fname))

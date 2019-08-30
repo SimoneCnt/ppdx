@@ -16,7 +16,7 @@ def readconfig(fname):
             IPOT      = "",
             PYDOCK    = "",
             CHARMM    = "",
-            SCRIPTS   = "",
+            ATTRACT   = "",
             PDBDIR    = ""
         )
     config = configparser.ConfigParser(defaults)
@@ -28,6 +28,7 @@ def readconfig(fname):
     ppdg.IPOT   = config.get('ppdg', 'IPOT')
     ppdg.PYDOCK = config.get('ppdg', 'PYDOCK')
     ppdg.CHARMM = config.get('ppdg', 'CHARMM')
+    ppdg.ATTRACT= config.get('ppdg', 'ATTRACT')
     ppdg.PDBDIR = config.get('ppdg', 'PDBDIR')
 
 def printconfig():
