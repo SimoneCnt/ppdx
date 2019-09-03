@@ -21,6 +21,9 @@ def all_descriptors():
     desc += ['ZRANK', 'ZRANK2']
     desc += ['pyDock', 'pyDock_elec', 'pyDock_vdw', 'pyDock_desolv']
     desc += ['ATTRACT']
+    desc += ['FireDock', 'FireDock_aVdW', 'FireDock_rVdW', 'FireDock_ACE', 'FireDock_inside',
+                'FireDock_aElec', 'FireDock_rElec', 'FireDock_laElec', 'FireDock_lrElec',
+                'FireDock_hb', 'FireDock_piS', 'FireDock_catpiS', 'FireDock_aliph']
     # Statistical Potentials
     desc += ['RF_HA_SRS', 'RF_CB_SRS_OD']
     desc += ['ipot_aace167', 'ipot_aace18', 'ipot_aace20', 'ipot_rrce20']
@@ -33,6 +36,7 @@ def all_descriptors():
     desc += ['GBSW_ELEC', 'GBSW_VDW', 'GBSW_GB', 'GBSW_ASP']
     desc += ['CDIE_ELEC', 'CDIE_VDW']
     desc += ['RDIE_ELEC', 'RDIE_VDW']
+    desc += ['OMM_vacuum', 'OMM_HCT', 'OMM_OBC1', 'OMM_OBC2', 'OMM_GBn', 'OMM_GBn2']
     # Folding
     desc += ['FoldX', 'FoldX_backbone_hbond', 'FoldX_sidechain_hbond', 'FoldX_vdw', 
                 'FoldX_elec', 'FoldX_solvation_polar', 'FoldX_solvation_hydrophobic', 
@@ -76,6 +80,11 @@ def evaluate(wrkdir, desc_wanted, scores=dict(), force_calc=False):
         scores.update(docking.pydock(wrkdir))
     if 'ATTRACT' in desc_set:
         scores.update(docking.attract(wrkdir))
+    if len(desc_set & set(['FireDock', 'FireDock_aVdW', 'FireDock_rVdW', 'FireDock_ACE', 'FireDock_inside',
+        'FireDock_aElec', 'FireDock_rElec', 'FireDock_laElec', 'FireDock_lrElec', 'FireDock_hb', 
+        'FireDock_piS', 'FireDock_catpiS', 'FireDock_aliph']))>0:
+        scores.update(docking.firedock(wrkdir))
+
 
     # Statistical Potentials
     if 'RF_HA_SRS' in desc_set:
@@ -110,6 +119,18 @@ def evaluate(wrkdir, desc_wanted, scores=dict(), force_calc=False):
         scores.update(implicit_solvents.cdie(wrkdir))
     if len(desc_set & set(['RDIE_ELEC', 'RDIE_VDW']))>0:
         scores.update(implicit_solvents.rdie(wrkdir))
+    if 'OMM_vacuum' in desc_set:
+        scores.update(implicit_solvents.omm_vacuum(wrkdir))
+    if 'OMM_HCT' in desc_set:
+        scores.update(implicit_solvents.omm_hct(wrkdir))
+    if 'OMM_OBC1' in desc_set:
+        scores.update(implicit_solvents.omm_obc1(wrkdir))
+    if 'OMM_OBC2' in desc_set:
+        scores.update(implicit_solvents.omm_obc2(wrkdir))
+    if 'OMM_GBn' in desc_set:
+        scores.update(implicit_solvents.omm_gbn(wrkdir))
+    if 'OMM_GBn2' in desc_set:
+        scores.update(implicit_solvents.omm_gbn2(wrkdir))
 
     # Folding scores
     if len(desc_set & set(['FoldX', 'FoldX_backbone_hbond', 'FoldX_sidechain_hbond', 'FoldX_vdw', 

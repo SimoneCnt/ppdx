@@ -29,6 +29,7 @@ def readconfig(fname):
     ppdg.PYDOCK = config.get('ppdg', 'PYDOCK')
     ppdg.CHARMM = config.get('ppdg', 'CHARMM')
     ppdg.ATTRACT= config.get('ppdg', 'ATTRACT')
+    ppdg.FIREDOCK= config.get('ppdg', 'FIREDOCK')
     ppdg.PDBDIR = config.get('ppdg', 'PDBDIR')
 
 def printconfig():
