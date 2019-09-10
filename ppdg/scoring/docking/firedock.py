@@ -63,7 +63,8 @@ def firedock(wrkdir):
     with open('firedock_build.out.ref', 'r') as fp:
         data = fp.readlines()[-1].split('|')
     if data[5].strip()=='glob':
-        raise ValueError('Problem with FireDock in %s' % (wrkdir))
+        log.warning('Problem with FireDock in %s' % (wrkdir))
+        data = [float('nan')]*20
     desc = dict()
     desc['FireDock']          = float(data[5])
     desc['FireDock_aVdW']     = float(data[6])
