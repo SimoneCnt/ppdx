@@ -16,6 +16,7 @@ def all_descriptors():
     # Molecular
     desc += ['HB_BH', 'HB_WN', 'HB_KS']
     desc += ['BSA', 'BSA_C', 'BSA_A', 'BSA_P', 'NIS_P', 'NIS_C', 'NIS_A', 'NRES']
+    desc += ['sticky_tot', 'sticky_avg']
     desc += ['IC_TOT', 'IC_AA', 'IC_PP', 'IC_CC', 'IC_AP', 'IC_CP', 'IC_AC']
     # Docking
     desc += ['ZRANK', 'ZRANK2']
@@ -68,6 +69,8 @@ def evaluate(wrkdir, desc_wanted, scores=dict(), force_calc=False):
         scores.update(molecular.hydrogenbond_difference(wrkdir))
     if len(desc_set & set(['BSA', 'BSA_C', 'BSA_A', 'BSA_P', 'NIS_P', 'NIS_C', 'NIS_A', 'NRES']))>0:
         scores.update(molecular.sasa_all(wrkdir))
+    if len(desc_set & set(['sticky_tot', 'sticky_avg']))>0:
+        scores.update(molecular.stickiness(wrkdir))
     if len(desc_set & set(['IC_TOT', 'IC_AA', 'IC_PP', 'IC_CC', 'IC_AP', 'IC_CP', 'IC_AC']))>0:
         scores.update(molecular.intermolecular_contacts(wrkdir))
 

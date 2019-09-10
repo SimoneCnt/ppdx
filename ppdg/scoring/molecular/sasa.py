@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-import os
+import sys, os
 from timeit import default_timer as timer
 import numpy as np
 import mdtraj
 import logging
 log = logging.getLogger(__name__)
 
-LEVY_CLASS_INTERRIOR = 1
+LEVY_CLASS_INTERIOR = 1
 LEVY_CLASS_SURFACE = 2
 LEVY_CLASS_SUPPORT = 3
 LEVY_CLASS_RIM = 4
@@ -175,13 +175,46 @@ def classify_residues_levy(wrkdir, cpxname='complex.pdb', recname='receptor.pdb'
                     klass.append(LEVY_CLASS_SUPPORT)
     return res_cpx, klass
 
+
+def stickiness(wrkdir):
+    """
+        Compute the average stickiness of the core interface residues according
+        to Levy [1].
+        [1] E. D. Levy, S. De, and S. A. Teichmann, "Cellular crowding imposes 
+            global constraints on the chemistry and evolution of proteomes", 
+            PNAS, vol. 109, no. 50, pp. 20461-20466, 2012.
+    """
+    stk = {
+        'ALA': 0.0062, 'CYS': 1.0372, 'ASP':-0.7485, 'GLU':-0.7893, 'PHE': 1.2727,
+        'GLY':-0.1771, 'HIS': 0.1204, 'ILE': 1.1109, 'LYS':-1.1806, 'LEU': 0.9138,
+        'MET': 1.0124, 'ASN':-0.2693, 'PRO':-0.1799, 'GLN':-0.4114, 'ARG':-0.0876,
+        'SER': 0.1376, 'THR': 0.1031, 'VAL': 0.7599, 'TRP': 0.7925, 'TYR': 0.8806
+        }
+    time_start = timer()
+    log.info("Getting Stickiness")
+    res, klass = classify_residues_levy(wrkdir)
+    stks = [ stk[r] for r, k in zip(res, klass) if k==LEVY_CLASS_CORE ]
+    desc = dict()
+    desc['sticky_tot'] = np.sum(stks)
+    desc['sticky_avg'] = np.average(stks)
+    time_end = timer()
+    desc['>TIME_stickiness'] = time_end - time_start
+    return desc
+
+
 if __name__=='__main__':
-    import sys
     if len(sys.argv)==2:
         print(sasa_all(sys.argv[1]))
+        print(stickiness(sys.argv[1]))
     elif len(sys.argv)==5:
         print(sasa_all(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]))
+        print(stickiness(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]))
     else:
         print('Usage: %s wrkdir [complex.pdb receptor.pdb ligand.pdb]' % (sys.argv[0]))
         quit()
+
+
+# To check AAindex
+# https://www.genome.jp/aaindex/AAindex/list_of_indices
+
 
