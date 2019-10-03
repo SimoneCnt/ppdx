@@ -7,13 +7,16 @@ import modeller, modeller.automodel
 import logging
 log = logging.getLogger(__name__)
 
+def modeller_veryfast(sequence, template, wrkdir):
+    return modeller_generic(sequence, template, wrkdir, "veryfast")
+
 def modeller_fast(sequence, template, wrkdir):
-    return modeller_generic(sequence, template, wrkdir, True)
+    return modeller_generic(sequence, template, wrkdir, "fast")
 
 def modeller_slow(sequence, template, wrkdir):
-    return modeller_generic(sequence, template, wrkdir, False)
+    return modeller_generic(sequence, template, wrkdir, "slow")
 
-def modeller_generic(sequence, template, wrkdir, fast=True):
+def modeller_generic(sequence, template, wrkdir, fast):
     """
         Build one model for the complex. Save it in the wrkdir folder.
     """
@@ -51,11 +54,16 @@ def modeller_generic(sequence, template, wrkdir, fast=True):
         a.starting_model = 0
         a.ending_model = 0
         a.auto_align()
-        if fast:
+        if fast=='veryfast':
+            a.md_level = None
+        elif fast=='fast':
             a.md_level = modeller.automodel.refine.fast
-        else:
+        elif fast=='slow':
             a.md_level = modeller.automodel.refine.slow
             a.repeat_optimization = 2
+        else:
+            log.error('You are expected to specify fast=[veryfast,fast,slow]')
+            quit()
         a.make()
         sys.stdout.flush()
         sys.stdout = _stdout

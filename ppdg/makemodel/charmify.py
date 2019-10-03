@@ -5,7 +5,7 @@ import ppdg
 import logging
 log = logging.getLogger(__name__)
 
-def charmify(fname):
+def charmify(fname, nsteps=100):
 
     basepath = os.getcwd()
     wrkdir, name = os.path.split(fname)
@@ -37,6 +37,7 @@ def charmify(fname):
         cmd += 'c%d=%s ' % (i, ch)
         i += 1
     cmd += 'name=chain_ out=%s ' % (basename)
+    cmd += 'nsteps=%d ' % (nsteps)
     cmd += '-i buildgen.inp'
 
     ppdg.link_data('buildgen.inp')

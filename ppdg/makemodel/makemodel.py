@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from .modeller import modeller_fast, modeller_slow
+from .modeller import modeller_veryfast, modeller_fast, modeller_slow
 #from .charmify import charmm_model
 import ppdg
 import logging
@@ -18,7 +18,9 @@ def make_model(wrkdir, protocol, tpl_complex, seq_complex): #, tpl_receptor=None
         if os.path.isfile(os.path.join(wrkdir, 'model.pdb')):
             return dict()
     # Else, make the model!
-    if protocol == 'modeller_fast':
+    if protocol == 'modeller_veryfast':
+        time = modeller_veryfast(seq_complex, tpl_complex, wrkdir)
+    elif protocol == 'modeller_fast':
         time = modeller_fast(seq_complex, tpl_complex, wrkdir)
     elif protocol == 'modeller_slow':
         time = modeller_slow(seq_complex, tpl_complex, wrkdir)

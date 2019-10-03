@@ -3,6 +3,7 @@
 * c1 = A, c2 = B, c3 = H, ... cn = L : the ID of the different chains in order
 * name = chain_ : the base name for the chain files
 * out = mysystem : outname for psf/cor/pdb
+* nsteps = number of steps of minimization to run
 *
 
 ! Read FF topology and parameters
@@ -52,8 +53,8 @@ stream disu.str
 autogen angl dihe
 
 ! Minimize
-mini sd nsteps 100
-mini abnr nsteps 100
+mini sd nsteps @nsteps
+mini abnr nsteps @nsteps
 coor chir check
 
 ! Write coordinates and topology
