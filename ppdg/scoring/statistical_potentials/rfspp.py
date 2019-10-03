@@ -25,10 +25,10 @@ def rfspp_core_core(pdb, pote):
 
 def rfspp_core(wrkdir, pote):
     """
-        Calculate RF_CB_SRS_OD scoring.
+        Calculate RFSPP scoring.
     """
     time_start = timer()
-    log.info("Getting RF_CB_SRS_OD scoring...")
+    log.info("Getting %s scoring..." % (pote))
     if not os.path.isfile(os.path.join(wrkdir, 'complex.pdb')):
         raise ValueError('File complex.pdb does not exist in %s.' % (wrkdir))
     if not os.path.isfile(os.path.join(wrkdir, 'ligand.pdb')):
