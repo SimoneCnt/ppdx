@@ -147,3 +147,44 @@ def _switch_desc_format(descriptors):
     return desc_flat
 
 
+def clean(wrkdir=None):
+    # List of files generated during model construction and evaluation of the descriptors.
+    # Commented file names should be kept, uncommented ones can be deleted without problems.
+    # wrkdir is the same as ppdg.WRKDIR
+
+    if not wrkdir:
+        wrkdir = ppdg.WRKDIR
+
+    log.info('Cleaning directory %s' % (wrkdir))
+
+    filelist = [
+
+        ## Modeller
+        'complex_seq.D00000000', 'complex_seq.ini', 'complex_seq.rsr', 'complex_seq.sch',
+        'complex_seq.V99990000', 'family.mat', 'modeller.out',
+        #'complex_seq.B99990000.pdb', 'model.pdb', 'template.pdb', 'sequence.seq', 'sequence.seq.ali',
+
+        ## Charmify
+        'add_disulfide.str', 'buildgen.inp', 'chain_a.pdb', 'chain_b.pdb', 'chain_c.pdb',
+        'disu.str', 'model-chm.err', 'model-chm.out',
+        #'model-chm.cor', 'model-chm.pdb', 'model-chm.psf',
+        #'complex-chm.cor', 'complex-chm.pdb', 'complex-chm.psf',
+
+        # Split complex
+        'extract.inp', 'ligand-chm.err', 'ligand-chm.out', 'receptor-chm.err', 'receptor-chm.out',
+        #'complex.pdb', 'complexAB.pdb', 'ligand.pdb', 'ligandB.pdb', 'receptor.pdb', 'receptorA.pdb',
+        #'ligand-chm.psf', 'ligand-chm.cor', 'ligand-chm.pdb', 'receptor-chm.cor', 'receptor-chm.pdb', 'receptor-chm.psf',
+    ]
+
+    wrkdir = os.path.abspath(wrkdir)
+    sysdir = [os.path.join(wrkdir, o) for o in os.listdir(wrkdir) if os.path.isdir(os.path.join(wrkdir, o))]
+
+    for sysname in sysdir:
+        modelsdirs = [os.path.join(sysname, o) for o in os.listdir(sysname) if os.path.isdir(os.path.join(sysname, o))]
+        for model in modelsdirs:
+            for f in filelist:
+                torm = os.path.join(model, f)
+                if os.path.isfile(torm):
+                    #print("Removing", torm)
+                    os.remove(torm)
+
