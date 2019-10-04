@@ -2,6 +2,7 @@
 
 import os, json
 import numpy as np
+from multiprocessing import Pool
 import ppdg
 import logging
 log = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None):
     return scores
 
 
-def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wanted, nmodels, force_calc=False):
+def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wanted, nmodels, ncores=1, force_calc=False):
     """
         Main function!
         Given:
@@ -85,16 +86,23 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
             desc = alldesc[protocol]
     desc_flat = _switch_desc_format(desc)
 
-    # Compute what needed
-    for i in range(nmodels):
-        wrkdir = os.path.join(base_wrkdir, protocol+'_%d' % (i))
-        if str(i) in desc_flat.keys():
-            desc_have = desc_flat[str(i)]
+    # Make a list of what we need to compute
+    to_compute = list()
+    for nmodel in range(nmodels):
+        if str(nmodel) in desc_flat.keys():
+            desc_have = desc_flat[str(nmodel)]
         else:
             desc_have = dict()
-        scores = _get_descriptors_core(wrkdir, protocol, template, sequence, nchains, desc_have, desc_wanted, force_calc)
-        desc_flat[str(i)] = scores
+        to_compute.append([base_wrkdir, protocol, nmodel, template, sequence, nchains, desc_have, desc_wanted, force_calc])
 
+    # Compute everything, if possibly in parallel
+    if ncores<2:
+        ncores = 1
+    with Pool(ncores) as p:
+        results = p.starmap(_get_descriptors_core, to_compute)
+    for nmodel, scores in results:
+        desc_flat[str(nmodel)] = scores
+        
     # Write descriptors to file
     desc2 = _switch_desc_format(desc_flat)
     if desc2!=desc:
@@ -105,18 +113,18 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
     return alldesc
 
 
-def _get_descriptors_core(wrkdir, protocol, template, sequence, nchains, desc_have, desc_wanted, force_calc=False):
+def _get_descriptors_core(base_wrkdir, protocol, nmodel, template, sequence, nchains, desc_have, desc_wanted, force_calc=False):
     """
         Core function to make one model and get the descriptors.
         Do not call this directly, but use get_descriptors.
     """
-
     desc_set = set()
     for desc in desc_wanted:
         if desc not in desc_have.keys() or force_calc:
             desc_set.add(desc)
     if len(desc_set)==0:
-        return desc_have
+        return (nmodel, desc_have)
+    wrkdir = os.path.join(base_wrkdir, protocol+'_%d' % (nmodel))
     scores = ppdg.makemodel.make_model(wrkdir, protocol, template, sequence)
     if protocol in ['modeller_veryfast']:
         nsteps = 10
@@ -126,7 +134,7 @@ def _get_descriptors_core(wrkdir, protocol, template, sequence, nchains, desc_ha
     ppdg.makemodel.split_complex(wrkdir, nchains)
     scores2 = ppdg.scoring.evaluate(wrkdir, desc_wanted, desc_have, force_calc)
     scores.update(scores2)
-    return scores
+    return (nmodel, scores)
 
 
 def _switch_desc_format(descriptors):
