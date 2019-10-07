@@ -7,21 +7,19 @@ import logging
 log = logging.getLogger(__name__)
 
 def run_facts(fname):
-    cmd = "%s sysname=%s -i facts.inp" % (os.path.join(ppdg.CHARMM, 'charmm'), fname)
-    out, err, ret = ppdg.tools.execute(cmd)
-    with open('%s-facts.out' % (fname), 'w') as fp:
-        fp.write(out)
-    with open('%s-facts.err' % (fname), 'w') as fp:
-        fp.write(err)
+    outfile = '%s-facts.out' % (fname)
+    cmd = "%s sysname=%s -i facts.inp >%s 2>&1" % (os.path.join(ppdg.CHARMM, 'charmm'), fname, outfile)
+    ret = ppdg.tools.execute(cmd)
     if ret!=0:
         raise ValueError("Charmm failed while running < %s >." % (cmd))
-    for line in out.splitlines():
-        if line.startswith('ENER EXTERN>'):
-            _, _, vdw, elec, _, _, _ = line.split()
-        if line.startswith('ENER FCTPOL>'):
-            _, _, gb = line.split()
-        if line.startswith('ENER FCTNPL>'):
-            _, _, asp = line.split()
+    with open(outfile) as fp:
+        for line in fp.readlines():
+            if line.startswith('ENER EXTERN>'):
+                _, _, vdw, elec, _, _, _ = line.split()
+            if line.startswith('ENER FCTPOL>'):
+                _, _, gb = line.split()
+            if line.startswith('ENER FCTNPL>'):
+                _, _, asp = line.split()
     return float(elec), float(vdw), float(gb), float(asp)
 
 def facts(wrkdir):

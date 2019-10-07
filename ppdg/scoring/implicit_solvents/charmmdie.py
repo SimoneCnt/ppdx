@@ -9,17 +9,15 @@ log = logging.getLogger(__name__)
 def run_die(fname, mode):
     if mode not in ['cdie', 'rdie']:
         raise ValueError('Mode must be either cdie or rdie')
-    cmd = "%s sysname=%s -i %s.inp" % (os.path.join(ppdg.CHARMM, 'charmm'), fname, mode)
-    out, err, ret = ppdg.tools.execute(cmd)
-    with open('%s-%s.out' % (fname, mode), 'w') as fp:
-        fp.write(out)
-    with open('%s-%s.err' % (fname, mode), 'w') as fp:
-        fp.write(err)
+    outfile = "%s-%s.out" % (fname, mode)
+    cmd = "%s sysname=%s -i %s.inp >%s 2>&1" % (os.path.join(ppdg.CHARMM, 'charmm'), fname, mode, outfile)
+    ret = ppdg.tools.execute(cmd)
     if ret!=0:
         raise ValueError("Charmm failed while running < %s >." % (cmd))
-    for line in out.splitlines():
-        if line.startswith('ENER EXTERN>'):
-            _, _, vdw, elec, _, _, _ = line.split()
+    with open(outfile) as fp:
+        for line in fp.readlines():
+            if line.startswith('ENER EXTERN>'):
+                _, _, vdw, elec, _, _, _ = line.split()
     return float(elec), float(vdw)
 
 def cdie(wrkdir):

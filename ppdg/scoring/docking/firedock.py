@@ -26,38 +26,26 @@ def firedock(wrkdir):
 
     # Reduce
     fd_reduce = "%s/PDBPreliminaries/reduce.2.21.030604 -DB %s/PDBPreliminaries/reduce_het_dict.txt -OH -HIS -NOADJust -NOROTMET" % (ppdg.FIREDOCK, ppdg.FIREDOCK)
-    stdout, stderr, ret = ppdg.tools.execute(fd_reduce+' receptor_firedock_noh.pdb')
-    with open('firedock_reduce_receptor.out', 'w') as fp:
-        fp.write(stderr)
-    with open('firedock_receptor.pdb', 'w') as fp:
-        fp.write(stdout)
+    ret = ppdg.tools.execute(fd_reduce+' receptor_firedock_noh.pdb >firedock_receptor.pdb 2>firedock_reduce_receptor.out')
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("FireDock reduce receptor failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
-    stdout, stderr, ret = ppdg.tools.execute(fd_reduce+' ligand_firedock_noh.pdb')
-    with open('firedock_reduce_ligand.out', 'w') as fp:
-        fp.write(stderr)
-    with open('firedock_ligand.pdb', 'w') as fp:
-        fp.write(stdout)
+        raise ValueError("FireDock reduce receptor failed!")
+    ret = ppdg.tools.execute(fd_reduce+' ligand_firedock_noh.pdb >firedock_ligand.pdb 2>firedock_reduce_ligand.out')
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("FireDock reduce ligand failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
+        raise ValueError("FireDock reduce ligand failed!")
 
     # Score
     with open('firedock.trans', 'w') as fp:
         fp.write("1 0.0 0.0 0.0 0.0 0.0 0.0")
-    stdout, stderr, ret = ppdg.tools.execute("%s/buildFireDockParams.pl firedock_receptor.pdb firedock_ligand.pdb U U Default firedock.trans firedock_build.out 1 50 0.85 0 firedock_parameters.dat" % ppdg.FIREDOCK)
-    with open("firedock_build.err", 'w') as fp:
-        fp.write(stdout+'\n'+stderr)
+    ret = ppdg.tools.execute("%s/buildFireDockParams.pl firedock_receptor.pdb firedock_ligand.pdb U U Default firedock.trans firedock_build.out 1 50 0.85 0 firedock_parameters.dat >firedock_build.err 2>&1" % ppdg.FIREDOCK)
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("FireDock build param failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
-    stdout, stderr, ret = ppdg.tools.execute("%s/runFireDock.pl firedock_parameters.dat" % (ppdg.FIREDOCK))
-    with open('firedock.log', 'w') as fp:
-        fp.write(stdout+'\n'+stderr)
+        raise ValueError("FireDock build param failed!")
+    ret = ppdg.tools.execute("%s/runFireDock.pl firedock_parameters.dat >firedock.log 2>&1" % (ppdg.FIREDOCK))
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("FireDock scoring failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
+        raise ValueError("FireDock scoring failed!")
 
     # Get values
     with open('firedock_build.out.ref', 'r') as fp:

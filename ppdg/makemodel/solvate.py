@@ -63,11 +63,7 @@ def solvate(fname, align=False, margin=9, conc=0.15):
         fp.write('autoionize -psf %s-solv.psf -pdb %s-solv.pdb -sc %f -cation POT -o %s-ion\n' % (name, name, conc, name))
         fp.write('quit\n')
 
-    out, err, ret = ppdg.tools.execute('vmd -dispdev text -e vmd.tcl')
-
-    print(out)
-    print(err)
-    print(err)
+    ret = ppdg.tools.execute('vmd -dispdev text -e vmd.tcl')
 
     os.chdir(basepath)
     if ret!=0:

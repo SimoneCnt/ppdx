@@ -24,10 +24,10 @@ def lisa(wrkdir, numthreads=None):
 
     log.info("Getting LISA scoring using %d threads..." % (numthreads))
 
-    stdout, stderr, ret = ppdg.tools.execute('LISA-1.0.py receptor.pdb ligand.pdb %d' % (numthreads))
+    ret = ppdg.tools.execute('LISA-1.0.py receptor.pdb ligand.pdb %d >lisa.out 2>&1' % (numthreads))
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("LISA failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
+        raise ValueError("LISA failed!")
 
     outfile = os.path.join(wrkdir, 'LISA-output', 'ligand', 'LISA_bindingAff.txt')
     if not os.path.isfile(outfile):

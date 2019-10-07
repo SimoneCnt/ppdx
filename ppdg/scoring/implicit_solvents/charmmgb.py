@@ -9,19 +9,17 @@ log = logging.getLogger(__name__)
 def run_gb(fname, mode):
     if mode not in ['gbsw', 'gbmv']:
         raise ValueError('Mode must be either gbsw or gbmv')
-    cmd = "%s sysname=%s -i %s.inp" % (os.path.join(ppdg.CHARMM, 'charmm'), fname, mode)
-    out, err, ret = ppdg.tools.execute(cmd)
-    with open('%s-%s.out' % (fname, mode), 'w') as fp:
-        fp.write(out)
-    with open('%s-%s.err' % (fname, mode), 'w') as fp:
-        fp.write(err)
+    outfile = '%s-%s.out' % (fname, mode)
+    cmd = "%s sysname=%s -i %s.inp >%s 2>&1" % (os.path.join(ppdg.CHARMM, 'charmm'), fname, mode, outfile)
+    ret = ppdg.tools.execute(cmd)
     if ret!=0:
         raise ValueError("Charmm failed while running < %s >." % (cmd))
-    for line in out.splitlines():
-        if line.startswith('ENER EXTERN>'):
-            _, _, vdw, elec, _, asp, _ = line.split()
-        if line.startswith('ENER PBEQ>'):
-            _, _, _, _, gb, _, _ = line.split()
+    with open(outfile) as fp:
+        for line in fp.readlines():
+            if line.startswith('ENER EXTERN>'):
+                _, _, vdw, elec, _, asp, _ = line.split()
+            if line.startswith('ENER PBEQ>'):
+                _, _, _, _, gb, _, _ = line.split()
     return float(elec), float(vdw), float(gb), float(asp)
 
 def gbmv(wrkdir):

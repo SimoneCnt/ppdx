@@ -29,24 +29,21 @@ def attract(wrkdir):
 
     # List of commands to execute
     cmds = [
-        ("%s/bin/shm-clean" % (ppdg.ATTRACT), None),
-        ("python2 %s/allatom/aareduce.py receptor.pdb receptor-aa.pdb --chain A --pdb2pqr" % (ppdg.ATTRACT), "attract_receptor_reduce.out"),
-        ("python2 %s/tools/reduce.py receptor-aa.pdb receptorr.pdb --chain A" % (ppdg.ATTRACT), "attract_receptor_reduce2.out"),
-        ("python2 %s/allatom/aareduce.py ligand.pdb ligand-aa.pdb --chain B --pdb2pqr" % (ppdg.ATTRACT), "attract_ligand_reduce.out"),
-        ("python2 %s/tools/reduce.py ligand-aa.pdb ligandr.pdb --chain B" % (ppdg.ATTRACT), "attract_ligand_reduce2.out"),
-        ("%s/bin/attract attract.dat %s/attract.par receptorr.pdb ligandr.pdb --score --fix-receptor --rcut 50.0" % (ppdg.ATTRACT, ppdg.ATTRACT), "attract.score"),
-        ("%s/bin/shm-clean" % (ppdg.ATTRACT), None)
+        "%s/bin/shm-clean >/dev/null 2>&1" % (ppdg.ATTRACT),
+        "python2 %s/allatom/aareduce.py receptor.pdb receptor-aa.pdb --chain A --pdb2pqr >attract_receptor_reduce.out 2>&1" % (ppdg.ATTRACT),
+        "python2 %s/tools/reduce.py receptor-aa.pdb receptorr.pdb --chain A >attract_receptor_reduce2.out 2>&1" % (ppdg.ATTRACT),
+        "python2 %s/allatom/aareduce.py ligand.pdb ligand-aa.pdb --chain B --pdb2pqr >attract_ligand_reduce.out 2>&1" % (ppdg.ATTRACT),
+        "python2 %s/tools/reduce.py ligand-aa.pdb ligandr.pdb --chain B >attract_ligand_reduce2.out" % (ppdg.ATTRACT),
+        "%s/bin/attract attract.dat %s/attract.par receptorr.pdb ligandr.pdb --score --fix-receptor --rcut 50.0 >attract.score 2>&1" % (ppdg.ATTRACT, ppdg.ATTRACT),
+        "%s/bin/shm-clean >/dev/null 2>&1" % (ppdg.ATTRACT)
     ]
 
     # Exec everything...
-    for cmd, outfile in cmds:
-        stdout, stderr, ret = ppdg.tools.execute(cmd)
+    for cmd in cmds:
+        ret = ppdg.tools.execute(cmd)
         if ret!=0:
             os.chdir(basepath)
-            raise ValueError("ATTRACT command failed!\n<%s>\nReturned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (cmd, ret, stdout, stderr))
-        if outfile:
-            with open(outfile, 'w') as fp:
-                fp.write(stdout+'\n'+stderr)
+            raise ValueError("ATTRACT command failed!\n<%s>" % (cmd))
 
     # Get the score
     with open("attract.score", 'r') as fp:

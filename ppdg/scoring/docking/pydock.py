@@ -38,16 +38,16 @@ def pydock(wrkdir):
         fp.write("pdb     = ligandB.pdb\n")
         fp.write("mol     = %s\n" % ('B'))
         fp.write("newmol  = %s\n" % ('B'))
-    stdout, stderr, ret = ppdg.tools.execute("%s pydock setup" % (os.path.join(ppdg.PYDOCK, 'pyDock3')))
+    ret = ppdg.tools.execute("%s pydock setup >pydock_setup.out 2>&1" % (os.path.join(ppdg.PYDOCK, 'pyDock3')))
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("pyDock setup failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
+        raise ValueError("pyDock setup failed!")
     with open("pydock.rot", 'w') as fp:
         fp.write("1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 %f %f %f 1\n" % (xavg, yavg, zavg))
-    stdout, stderr, ret = ppdg.tools.execute("%s pydock dockser" % (os.path.join(ppdg.PYDOCK, 'pyDock3')))
+    ret = ppdg.tools.execute("%s pydock dockser >pydock_dockser.out 2>&1" % (os.path.join(ppdg.PYDOCK, 'pyDock3')))
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("pyDock dockser failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
+        raise ValueError("pyDock dockser failed!")
     with open('pydock.ene', 'r') as fp:
         line = fp.readlines()[-1]
         _, elec, desolv, vdw, total, _ = line.split()

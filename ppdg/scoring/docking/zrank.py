@@ -18,10 +18,10 @@ def zrank(wrkdir):
     os.chdir(wrkdir)
     with open("zrank", 'w') as fp:
         fp.write('complexAB.pdb')
-    stdout, stderr, ret = ppdg.tools.execute("%s zrank" % (os.path.join(ppdg.ZRANK, 'zrank')))
+    ret = ppdg.tools.execute("%s zrank >zrank.err 2>&1" % (os.path.join(ppdg.ZRANK, 'zrank')))
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("ZRANK failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
+        raise ValueError("ZRANK failed!")
     with open("zrank.zr.out", 'r') as fp:
         zrank = float(fp.readline().split()[1])
     os.chdir(basepath)
@@ -42,10 +42,10 @@ def zrank2(wrkdir):
     os.chdir(wrkdir)
     with open("zrank2", 'w') as fp:
         fp.write('complexAB.pdb')
-    stdout, stderr, ret = ppdg.tools.execute("%s -R zrank2" % (os.path.join(ppdg.ZRANK, 'zrank')))
+    ret = ppdg.tools.execute("%s -R zrank2 >zrank2.err 2>&1" % (os.path.join(ppdg.ZRANK, 'zrank')))
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("ZRANK failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (ret, stdout, stderr))
+        raise ValueError("ZRANK failed!")
     with open("zrank2.zr.out", 'r') as fp:
         zrank2 = float(fp.readline().split()[1])
     os.chdir(basepath)

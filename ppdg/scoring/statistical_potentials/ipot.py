@@ -26,11 +26,14 @@ def ipot_core(wrkdir, pote):
         raise ValueError('File receptor.pdb does not exist in %s.' % (wrkdir))
     basepath = os.getcwd()
     os.chdir(wrkdir)
-    stdout, stderr, ret = ppdg.tools.execute("%s -r receptor.pdb -l ligand.pdb" % (os.path.join(ppdg.IPOT, pote)))
-    os.chdir(basepath)
+    outfile = 'ipot_%s.out' % (pote)
+    ret = ppdg.tools.execute("%s -r receptor.pdb -l ligand.pdb >%s 2>&1" % (os.path.join(ppdg.IPOT, pote), outfile))
     if ret!=0:
-        raise ValueError("iPot with potential %s failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (pote, ret, stdout, stderr))
-    dG = float(stdout.split()[1])
+        os.chdir(basepath)
+        raise ValueError("iPot with potential %s failed!" % (pote))
+    with open(outfile) as fp:
+        dG = float(fp.readlines()[-1].split()[1])
+    os.chdir(basepath)
     time_end = timer()
     desc = dict()
     desc['ipot_'+pote] = dG

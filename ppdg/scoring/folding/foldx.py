@@ -25,9 +25,9 @@ def foldx(wrkdir, cpxname='complexAB.pdb'):
             os.symlink(os.path.join(ppdg.FOLDX, 'rotabase.txt'), 'rotabase.txt')
         else:
             raise ValueError('Impossible to find file rotabase.txt in directory %s. Fix FOLDX variable in config.' % (ppdg.FOLDX))
-    out, err, ret = ppdg.tools.execute(os.path.join(ppdg.FOLDX,'foldx') + " --command=RepairPDB --pdb=%s" % (cpxname))
+    ret = ppdg.tools.execute(os.path.join(ppdg.FOLDX,'foldx') + " --command=RepairPDB --pdb=%s" % (cpxname) + " >foldx_repair.err 2>&1")
     repairname = cpxname[:-4]+'_Repair.pdb'
-    out, err, ret = ppdg.tools.execute(os.path.join(ppdg.FOLDX,'foldx') + " --command=AnalyseComplex --pdb=%s --analyseComplexChains=A,B --output-file=foldx" % (repairname))
+    ret = ppdg.tools.execute(os.path.join(ppdg.FOLDX,'foldx') + " --command=AnalyseComplex --pdb=%s --analyseComplexChains=A,B --output-file=foldx" % (repairname) + " >foldx_analyse.err 2>&1")
     desc = dict()
     with open('Interaction_foldx_AC.fxout','r') as fp:
         for line in fp.readlines():

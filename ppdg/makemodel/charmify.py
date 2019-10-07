@@ -38,16 +38,12 @@ def charmify(fname, nsteps=100):
         i += 1
     cmd += 'name=chain_ out=%s ' % (basename)
     cmd += 'nsteps=%d ' % (nsteps)
-    cmd += '-i buildgen.inp'
+    cmd += '-i buildgen.inp >%s 2>&1' % (basename+'.out')
 
     ppdg.link_data('buildgen.inp')
     ppdg.link_data('disu.str')
 
-    out, err, ret = ppdg.tools.execute(cmd)
-    with open(basename+'.out', 'w') as fp:
-        fp.write(out)
-    with open(basename+'.err', 'w') as fp:
-        fp.write(err)
+    ret = ppdg.tools.execute(cmd)
     os.chdir(basepath)
     if ret!=0:
         raise ValueError("Charmm failed.")

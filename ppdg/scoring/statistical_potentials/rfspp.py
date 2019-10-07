@@ -18,10 +18,13 @@ def rfspp_core_core(pdb, pote):
             BMC Bioinformatics, vol. 11, p. 128, 2010.
     """
     rfspp = os.path.join(ppdg.RFSPP, "calc_energy")
-    stdout, stderr, ret = ppdg.tools.execute("%s %s %s" % (rfspp, pdb, os.path.join(ppdg.RFSPP, pote)))
+    outfile = 'rfspp_%s.out' % (pote)
+    ret = ppdg.tools.execute("%s %s %s >%s 2>&1" % (rfspp, pdb, os.path.join(ppdg.RFSPP, pote), outfile))
     if ret!=0:
-        raise ValueError("calc_energy with potential %s failed! Returned code is %d\nSTDOUT:\n%s\nSTDERR:\n%s" % (pote, ret, stdout, stderr))
-    return float(stdout)
+        raise ValueError("calc_energy with potential %s failed!" % (pote))
+    with open(outfile) as fp:
+        dg = float(fp.readlines()[-1])
+    return dg
 
 def rfspp_core(wrkdir, pote):
     """
