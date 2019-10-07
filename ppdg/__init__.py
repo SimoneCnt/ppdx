@@ -2,7 +2,7 @@
 
 from .config import readconfig, printconfig
 from .pdb import Pdb
-from .get_descriptors import get_descriptors, get_descriptors_average, clean
+from .get_descriptors import get_descriptors, get_descriptors_average, clean, eval_pkl
 
 from . import tools
 from . import makemodel

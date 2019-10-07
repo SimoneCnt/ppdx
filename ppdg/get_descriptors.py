@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os, json
+import hashlib
+import joblib
 import numpy as np
 from multiprocessing import Pool
 import ppdg
@@ -195,4 +197,24 @@ def clean(wrkdir=None):
                 if os.path.isfile(torm):
                     #print("Removing", torm)
                     os.remove(torm)
+
+def eval_pkl(pkl, cpxseq, nchains, template, name=None, nmodels=12, ncores=11):
+    """
+        Evaluate the content of a pkl file given the complex sequence, the 
+        number of chains in ligand and receptor, and a template.
+        name is the name of the complex. If not given, a name is generate as the
+        hash of the sequence. nmodels is how many models to generate, and ncores
+        the number of cores to use for parallel execution. Leave at least one free
+        core, otherwise the code my deadlock.
+        The pkl should contain in order: the protocol to use, the list of needed
+        descriptors, a scaler (not implemented!) and the regression model to use.
+    """
+    protocol, desclist, scaler, reg = joblib.load(pkl)
+    if not name:
+        name = hashlib.md5(cpxseq.encode()).hexdigest()
+    wrkdir = os.path.join(ppdg.WRKDIR, name)
+    ppdg.get_descriptors(wrkdir, protocol, template, cpxseq, nchains, desclist, nmodels, ncores=ncores)
+    scores = ppdg.get_descriptors_average(wrkdir, protocol, desc_list=desclist, nmodels=nmodels)
+    desc = np.array([ scores[d][0] for d in desclist ]).reshape(1, -1)
+    return reg.predict(desc)[0]
 
