@@ -99,9 +99,12 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
 
     # Compute everything, if possibly in parallel
     if ncores<2:
-        ncores = 1
-    with Pool(ncores) as p:
-        results = p.starmap(_get_descriptors_core, to_compute)
+        results = list()
+        for compute in to_compute:
+            results.append(_get_descriptors_core(*compute))
+    else:
+        with Pool(ncores) as p:
+            results = p.starmap(_get_descriptors_core, to_compute)
     for nmodel, scores in results:
         desc_flat[str(nmodel)] = scores
         
