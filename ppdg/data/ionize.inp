@@ -1,4 +1,6 @@
 * Script to add ions into a solvated box by replacing some waters 
+* @in
+* @out
 *
 
 !dimension chsize 8000000 maxres 8000000
@@ -6,8 +8,8 @@
 stream /home/simone/opt/ff/charmmff.str
 
 ! Read psf and cor
-read psf  card name solvated.psf
-read coor card name solvated.cor
+read psf  card name @in.psf
+read coor card name @in.cor
 
 ! add ions
 ! replace some of the atoms in the selection below
@@ -51,9 +53,9 @@ set ionseg 2
 stream /home/simone/opt/scripts/charmm/build/addions.str
 !
 
-write psf  card name ionized.psf
-write coor card name ionized.cor  
-write coor pdb  name ionized.pdb
+write psf  card name @out.psf
+write coor card name @out.cor  
+write coor pdb  name @out.pdb
 
 
 !if ( ?CGTOT .ae. 0 ) system "echo ERROR: could not balance charge"

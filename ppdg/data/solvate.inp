@@ -1,16 +1,16 @@
 * protein solvation component
+* @in 
+* @out
+* @buf
 *
 
-!dimension chsize 4000000 maxres 4000000
+dimension chsize 4000000 maxres 4000000
 
 stream /home/simone/opt/ff/charmmff.str
 
 ! Read psf and cor
-read psf  card name protein.psf
-read coor pdb  name protein.pdb resid
-
-! Solvation radius
-set buf 12.0
+read psf  card name @in.psf
+read coor card name @in.cor
 
 ! Define the solute -- including crystallographic water
 define solute sele all end
@@ -41,8 +41,8 @@ rename segid wat select segid w* end ! rename all waters
 !mini conj nstep 10
 !minimize abnr nstep 10
 
-write psf  card name solvated.psf
-write coor card name solvated.cor
+write psf  card name @out.psf
+write coor card name @out.cor
 * solvated in a box of dimension
 * xmin=@xmi ymin=@ymi zmin=@zmi 
 * xmax=@xma ymax=@yma zmax=@zma 

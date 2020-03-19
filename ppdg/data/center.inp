@@ -1,0 +1,22 @@
+* recenter box for openmm
+* @in
+* @out 
+*
+
+stream /home/simone/opt/ff/charmmff.str
+
+! Read psf and cor
+read psf  card name @in.psf
+read coor card name @in.cor
+
+coor stat sele all end
+
+coor trans xdir -?XMIN ydir -?YMIN zdir -?ZMIN sele all end
+
+coor stat sele all end
+
+write psf  card name @out.psf
+write coor card name @out.cor
+write coor pdb  name @out.pdb
+
+stop

@@ -5,7 +5,37 @@ import ppdg
 import logging
 log = logging.getLogger(__name__)
 
-def solvate(fname, align=False, margin=9, conc=0.15):
+def solvate_chm(fname, buf=12.0, center=True):
+
+    # Charmm path
+    charmm = os.path.join(ppdg.CHARMM, 'charmm')
+
+    if not os.path.isfile('%s_solv.psf' % (fname)):
+        log.info('Solvating %s' % (fname))
+        ppdg.link_data('solvate.inp')
+        cmd = "%s in=%s out=%s_solv buf=%f -i solvate.inp > %s_solv.out 2>&1" % (charmm, fname, fname, buf, fname)
+        ret = ppdg.tools.execute(cmd)
+        if ret!=0:
+            raise ValueError("Charmm solvate failed for input %s" % (fname))
+
+    if not os.path.isfile('%s_ion.psf' % (fname)):
+        log.info('Ionizing %s' % (fname))
+        ppdg.link_data('ionize.inp')
+        cmd = "%s in=%s_solv out=%s_ion -i ionize.inp > %s_ion.out 2>&1" % (charmm, fname, fname, fname)
+        ret = ppdg.tools.execute(cmd)
+        if ret!=0:
+            raise ValueError("Charmm ionize failed for input %s" % (fname))
+
+    if center and not os.path.isfile('%s_center.psf' % (fname)):
+        log.info('Centering %s' % (fname))
+        ppdg.link_data('center.inp')
+        cmd = "%s in=%s_ion out=%s_center -i center.inp > %s_center.out 2>&1" % (charmm, fname, fname, fname)
+        ret = ppdg.tools.execute(cmd)
+        if ret!=0:
+            raise ValueError("Charmm center failed for input %s" % (fname))
+
+
+def solvate_vmd(fname, align=False, margin=9, conc=0.15):
     '''
         Suppose fname.pdb and fname.psf exist!
     '''
