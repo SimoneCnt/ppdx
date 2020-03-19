@@ -43,7 +43,11 @@ def modeller_generic(sequence, template, wrkdir, fast):
         if isinstance(template, ppdg.Pdb):
             template.write('template.pdb')
         else:
-            os.symlink(os.path.join(basepath, template), 'template.pdb')
+            template_path = os.path.join(basepath, template)
+            if os.path.isfile(template_path):
+                os.symlink(os.path.join(basepath, template), 'template.pdb')
+            else:
+                raise ValueError('Impossible to find template file %s' % (template))
     # Run modeller
     with open("modeller.out", "w") as fp:
         _stdout = sys.stdout
