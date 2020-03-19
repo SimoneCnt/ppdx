@@ -9,15 +9,17 @@ def readconfig(fname):
         Set some needed variables.
     '''
     defaults = dict(
-            WRKDIR    = os.path.join(os.getcwd(), 'models'),
-            ZRANK     = "",
-            RFSPP     = "",
-            FOLDX     = "",
-            IPOT      = "",
-            PYDOCK    = "",
-            CHARMM    = "",
-            ATTRACT   = "",
-            PDBDIR    = ""
+            WRKDIR      = os.path.join(os.getcwd(), 'models'),
+            ZRANK       = "",
+            RFSPP       = "",
+            FOLDX       = "",
+            IPOT        = "",
+            PYDOCK      = "",
+            CHARMM      = "",
+            ATTRACT     = "",
+            PDBDIR      = "",
+            ROSETTA     = "",
+            ROSETTABIN  = ""
         )
     config = configparser.ConfigParser(defaults)
     config.read(fname)
@@ -31,6 +33,8 @@ def readconfig(fname):
     ppdg.ATTRACT= config.get('ppdg', 'ATTRACT')
     ppdg.FIREDOCK= config.get('ppdg', 'FIREDOCK')
     ppdg.PDBDIR = config.get('ppdg', 'PDBDIR')
+    ppdg.ROSETTA = config.get('ppdg', 'ROSETTA')
+    ppdg.ROSETTABIN = config.get('ppdg', 'ROSETTABIN')
 
 def printconfig():
     '''

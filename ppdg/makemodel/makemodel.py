@@ -2,6 +2,7 @@
 
 import os
 from .modeller import modeller_veryfast, modeller_fast, modeller_slow
+from .rosetta import rosetta1
 #from .charmify import charmm_model
 import ppdg
 import logging
@@ -24,12 +25,13 @@ def make_model(wrkdir, protocol, tpl_complex, seq_complex): #, tpl_receptor=None
         time = modeller_fast(seq_complex, tpl_complex, wrkdir)
     elif protocol == 'modeller_slow':
         time = modeller_slow(seq_complex, tpl_complex, wrkdir)
+    elif protocol == 'rosetta':
+        time = rosetta1(seq_complex, tpl_complex, wrkdir)
     #if protocol == 'charmm':
     #    time = charmm_model(wrkdir, tpl_complex, tpl_receptor, tpl_ligand)
     #    return time
     else:
-        raise ValueError('Unknown requested protocol %s. Valid values are modeller_fast and modeller_slow.' % protocol)
-
+        raise ValueError('Unknown requested protocol %s. Valid values are modeller_veryfast, modeller_fast, modeller_slow, and rosetta.' % protocol)
     return {'>TIME_makemodel':time}
 
 def split_complex(wrkdir, nchains):

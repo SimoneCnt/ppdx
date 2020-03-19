@@ -1,0 +1,22 @@
+<ROSETTASCRIPTS>
+<SCOREFXNS>
+    <ScoreFunction name="stage1" weights="score3" symmetric="0">
+        <Reweight scoretype="atom_pair_constraint" weight="0.5"/>
+    </ScoreFunction>
+    <ScoreFunction name="stage2" weights="score4_smooth_cart" symmetric="0">
+        <Reweight scoretype="atom_pair_constraint" weight="0.5"/>
+    </ScoreFunction>
+    <ScoreFunction name="fullatom" weights="talaris2013_cart" symmetric="0">
+        <Reweight scoretype="atom_pair_constraint" weight="0.5"/>
+    </ScoreFunction>
+</SCOREFXNS>
+<MOVERS>
+    <Hybridize name="hybridize" stage1_scorefxn="stage1" stage2_scorefxn="stage2" fa_scorefxn="fullatom" batch="1" stage1_increase_cycles="1.0" stage2_increase_cycles="1.0">
+        <Template pdb="PDBID_thread.pdb" cst_file="AUTO" weight="1.000" />
+    </Hybridize>
+</MOVERS>
+<PROTOCOLS>
+    <Add mover="hybridize"/>
+</PROTOCOLS>
+<OUTPUT scorefxn="talaris2013" />
+</ROSETTASCRIPTS>
