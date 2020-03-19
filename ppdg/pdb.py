@@ -162,6 +162,8 @@ class Pdb():
                         self.atoms.append(Atom(pdbstring=line))
                     if line.startswith("SEQRES"):
                         self.parse_seqres(line)
+                    if line.startswith('END'): ## Stop reading after finding END or ENDMDL
+                        break
         elif fname[-3:]=='cif':
             with open(fname, 'r') as fp:
                 for line in fp.readlines():
