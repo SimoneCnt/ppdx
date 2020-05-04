@@ -1,5 +1,6 @@
 * Calculate energy
 * @sysname 
+* @domini
 *
 
 ! Load the force field
@@ -9,7 +10,7 @@ read psf  card name @sysname.psf
 read coor card name @sysname.cor
 
 prnlev 0
-stream "~/opt/src/charmm/c41b1-magma/test/data/radius.str"
+stream "~/opt/src/charmm/c44b1/test/data/radius.str"
 prnlev 5 node 0
 scalar wmain statistics select .not. type H* end
 define check select (.not type H* ) .and. ( prop wmain .eq. 0.0 ) show end
@@ -18,7 +19,15 @@ if ?nsel ne 0  stop       !some heavy atom have a zero radius
 nbond atom cdiel switch vatom vswitch cutnb 20.0 ctofnb 18.0 ctonnb 16.0
 GBSW sw 0.3 sgamma 0.03 dgp 1.5 GBenergy epsp 1.0
 
-mini abnr nsteps 100
+if @domini .eq. 1 then
+
+    mini sd nsteps 50
+    mini abnr nsteps 100
+
+    write psf  card name @sysname-gbsw.psf
+    write coor card name @sysname-gbsw.cor
+
+endif
 
 ener
 

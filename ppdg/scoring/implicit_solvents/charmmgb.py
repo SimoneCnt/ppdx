@@ -10,7 +10,7 @@ def run_gb(fname, mode):
     if mode not in ['gbsw', 'gbmv']:
         raise ValueError('Mode must be either gbsw or gbmv')
     outfile = '%s-%s.out' % (fname, mode)
-    cmd = "%s sysname=%s -i %s.inp >%s 2>&1" % (os.path.join(ppdg.CHARMM, 'charmm'), fname, mode, outfile)
+    cmd = "%s sysname=%s domini=0 -i %s.inp >%s 2>&1" % (os.path.join(ppdg.CHARMM, 'charmm'), fname, mode, outfile)
     ret = ppdg.tools.execute(cmd)
     if ret!=0:
         raise ValueError("Charmm failed while running < %s >." % (cmd))
@@ -31,6 +31,37 @@ def gbmv(wrkdir):
     os.chdir(wrkdir)
     log.info("Getting GBMV scoring...")
     ppdg.link_data('gbmv.inp')
+
+    # Minimize complex
+    cmd = "%s sysname=complex-chm domini=1 -i gbmv.inp >gbmv_mini.out 2>&1" % (os.path.join(ppdg.CHARMM, 'charmm'))
+    ret = ppdg.tools.execute(cmd)
+    if ret!=0:
+        raise ValueError("Charmm failed while running < %s >." % (cmd))
+
+    # Split minimized complex
+
+    with open('nchains.dat') as fp:
+        lrec, llib = (int(v) for v in fp.readline().split())
+    nchains_tot = lrec+llib
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    crec = alphabet[:lrec]
+    clig = alphabet[lrec:nchains_tot]
+    sele_rec = ' .or. '.join(['segid %s' % (c) for c in crec])
+    sele_lig = ' .or. '.join(['segid %s' % (c) for c in clig])
+    ppdg.link_data('extract.inp')
+
+    cmd = '%s basename=%s sel="%s" outname=%s -i extract.inp >%s 2>&1' % \
+            (os.path.join(ppdg.CHARMM, 'charmm'), 'complex-chm-gbmv', sele_rec, 'receptor-chm-gbmv', 'receptor-chm-gbmv.out')
+    ret = ppdg.tools.execute(cmd)
+    if ret!=0:
+        raise ValueError("Charmm failed.")
+
+    cmd = '%s basename=%s sel="%s" outname=%s -i extract.inp >%s 2>&1' % \
+            (os.path.join(ppdg.CHARMM, 'charmm'), 'complex-chm-gbmv', sele_lig, 'ligand-chm-gbmv', 'ligand-chm-gbmv.out')
+    ret = ppdg.tools.execute(cmd)
+    if ret!=0:
+        raise ValueError("Charmm failed.")
+
 
     cpx_elec, cpx_vdw, cpx_gb, cpx_asp = run_gb('complex-chm', 'gbmv')
     rec_elec, rec_vdw, rec_gb, rec_asp = run_gb('receptor-chm', 'gbmv')
@@ -58,9 +89,39 @@ def gbsw(wrkdir):
     log.info("Getting GBSW scoring...")
     ppdg.link_data('gbsw.inp')
 
-    cpx_elec, cpx_vdw, cpx_gb, cpx_asp = run_gb('complex-chm', 'gbsw')
-    rec_elec, rec_vdw, rec_gb, rec_asp = run_gb('receptor-chm', 'gbsw')
-    lig_elec, lig_vdw, lig_gb, lig_asp = run_gb('ligand-chm', 'gbsw')
+    # Minimize complex
+    cmd = "%s sysname=complex-chm domini=1 -i gbsw.inp >gbsw_mini.out 2>&1" % (os.path.join(ppdg.CHARMM, 'charmm'))
+    ret = ppdg.tools.execute(cmd)
+    if ret!=0:
+        raise ValueError("Charmm failed while running < %s >." % (cmd))
+
+    # Split minimized complex
+
+    with open('nchains.dat') as fp:
+        lrec, llib = (int(v) for v in fp.readline().split())
+    nchains_tot = lrec+llib
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    crec = alphabet[:lrec]
+    clig = alphabet[lrec:nchains_tot]
+    sele_rec = ' .or. '.join(['segid %s' % (c) for c in crec])
+    sele_lig = ' .or. '.join(['segid %s' % (c) for c in clig])
+    ppdg.link_data('extract.inp')
+
+    cmd = '%s basename=%s sel="%s" outname=%s -i extract.inp >%s 2>&1' % \
+            (os.path.join(ppdg.CHARMM, 'charmm'), 'complex-chm-gbsw', sele_rec, 'receptor-chm-gbsw', 'receptor-chm-gbsw.out')
+    ret = ppdg.tools.execute(cmd)
+    if ret!=0:
+        raise ValueError("Charmm failed.")
+
+    cmd = '%s basename=%s sel="%s" outname=%s -i extract.inp >%s 2>&1' % \
+            (os.path.join(ppdg.CHARMM, 'charmm'), 'complex-chm-gbsw', sele_lig, 'ligand-chm-gbsw', 'ligand-chm-gbsw.out')
+    ret = ppdg.tools.execute(cmd)
+    if ret!=0:
+        raise ValueError("Charmm failed.")
+
+    cpx_elec, cpx_vdw, cpx_gb, cpx_asp = run_gb('complex-chm-gbsw', 'gbsw')
+    rec_elec, rec_vdw, rec_gb, rec_asp = run_gb('receptor-chm-gbsw', 'gbsw')
+    lig_elec, lig_vdw, lig_gb, lig_asp = run_gb('ligand-chm-gbsw', 'gbsw')
 
     desc = dict()
     desc['GBSW_ELEC'] = cpx_elec - (rec_elec + lig_elec)

@@ -131,6 +131,10 @@ def _get_descriptors_core(base_wrkdir, protocol, nmodel, template, sequence, nch
         return (nmodel, desc_have)
     wrkdir = os.path.join(base_wrkdir, protocol+'_%d' % (nmodel))
     scores = ppdg.makemodel.make_model(wrkdir, protocol, template, sequence)
+    nchfile = os.path.join(wrkdir, 'nchains.dat')
+    if not os.path.isfile(nchfile):
+        with open(nchfile,'w') as fp:
+            fp.write('%d %d' % nchains)
     if protocol in ['modeller_veryfast']:
         nsteps = 10
     else:
@@ -178,7 +182,8 @@ def clean(wrkdir=None):
         #'complex_seq.B99990000.pdb', 'model.pdb', 'template.pdb', 'sequence.seq', 'sequence.seq.ali',
 
         ## Charmify
-        'add_disulfide.str', 'buildgen.inp', 'chain_a.pdb', 'chain_b.pdb', 'chain_c.pdb',
+        'add_disulfide.str', 'buildgen.inp',
+        # 'chain_a.pdb', 'chain_b.pdb', 'chain_c.pdb',
         'disu.str', 'model-chm.err', 'model-chm.out',
         #'model-chm.cor', 'model-chm.pdb', 'model-chm.psf',
         #'complex-chm.cor', 'complex-chm.pdb', 'complex-chm.psf',

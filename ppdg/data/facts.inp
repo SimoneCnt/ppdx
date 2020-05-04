@@ -1,5 +1,6 @@
 * Calculate energy
 * @sysname 
+* @domini
 *
 
 ! Load the force field
@@ -14,7 +15,15 @@ nbond nbxmod 5 atom cdiel shift vatom vdistance vswitch -
       cutnb 14.0 ctofnb 12.0 ctonnb 10.0 e14fac 1.0 wmin 1.5
 facts tcps 22 teps 1.0 gamm 0.015 TAVW
 
-mini abnr nsteps 100
+if @domini .eq. 1 then
+
+    mini sd nsteps 50
+    mini abnr nsteps 100
+
+    write psf  card name @sysname-facts.psf
+    write coor card name @sysname-facts.cor
+
+endif
 
 ener
 
