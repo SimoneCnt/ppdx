@@ -38,6 +38,9 @@ def gbmv(wrkdir):
     if ret!=0:
         raise ValueError("Charmm failed while running < %s >." % (cmd))
 
+    os.remove('complex-chm-gbmv.psf')
+    os.symlink('complex-chm.psf', 'complex-chm-gbmv.psf')
+
     # Split minimized complex
 
     with open('nchains.dat') as fp:
@@ -56,12 +59,17 @@ def gbmv(wrkdir):
     if ret!=0:
         raise ValueError("Charmm failed.")
 
+    os.remove('receptor-chm-gbmv.psf')
+    os.symlink('receptor-chm.psf', 'receptor-chm-gbmv.psf')
+
     cmd = '%s basename=%s sel="%s" outname=%s -i extract.inp >%s 2>&1' % \
             (os.path.join(ppdg.CHARMM, 'charmm'), 'complex-chm-gbmv', sele_lig, 'ligand-chm-gbmv', 'ligand-chm-gbmv.out')
     ret = ppdg.tools.execute(cmd)
     if ret!=0:
         raise ValueError("Charmm failed.")
 
+    os.remove('ligand-chm-gbmv.psf')
+    os.symlink('ligand-chm.psf', 'ligand-chm-gbmv.psf')
 
     cpx_elec, cpx_vdw, cpx_gb, cpx_asp = run_gb('complex-chm', 'gbmv')
     rec_elec, rec_vdw, rec_gb, rec_asp = run_gb('receptor-chm', 'gbmv')

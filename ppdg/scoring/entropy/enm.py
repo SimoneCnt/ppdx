@@ -48,7 +48,7 @@ def enm_entropy(fname, K=50.0, cutoff=7.0, spring='constant'):
 
     pdb_all = ppdg.Pdb(fname)
     pdb_all.remove_hydrogens()
-    pdb = [ [atom.x, atom.y, atom.z] for atom in pdb_all.atoms ]
+    pdb = [ [atom.x, atom.y, atom.z] for atom in pdb_all.atoms if (atom.name=='CB' or (atom.name=='CA' and atom.resname=='GLY')) ]
 
     def spring_constant(k,d):
         return k/(d*d)
@@ -67,9 +67,9 @@ def enm_entropy(fname, K=50.0, cutoff=7.0, spring='constant'):
         log.error("Unkown spring method <%s>. Available are: constant, exponential, overR6" % spring)
         return float('nan')
 
-    #print("Making ENM")
     enm = []
     natoms = len(pdb)
+    log.info("Making ENM on %d residues" % (natoms))
     for i in range(natoms):
         for j in range(i+1, natoms):
             dx = pdb[i][0] - pdb[j][0]
@@ -96,6 +96,7 @@ def enm_entropy(fname, K=50.0, cutoff=7.0, spring='constant'):
                 hess[3*j+m][3*j+n] += tmp*v1*v2
                 hess[3*i+m][3*j+n] -= tmp*v1*v2
                 hess[3*j+m][3*i+n] -= tmp*v1*v2
+    del enm
     #print("Diagonalizing it...")
     #eival, eivec = np.linalg.eig(hess)
     eival = np.linalg.eigvalsh(hess)

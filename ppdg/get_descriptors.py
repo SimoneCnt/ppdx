@@ -9,7 +9,7 @@ import ppdg
 import logging
 log = logging.getLogger(__name__)
 
-def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None):
+def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None, median=False):
     """
         Return the average and standard error for the descriptors in 
         desc_list for the first nmodels.
@@ -36,7 +36,10 @@ def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None):
                 lst.append(descriptors[desc][str(i)])
         else:
             lst = np.array([ v for k,v in descriptors[desc].items() ])
-        avg = np.mean(lst)
+        if median:
+            avg = np.median(lst)
+        else:
+            avg = np.mean(lst)
         std = np.std(lst)
         err = std/np.sqrt(len(lst))
         scores[desc] = [avg, std, err]
@@ -192,6 +195,10 @@ def clean(wrkdir=None):
         'extract.inp', 'ligand-chm.err', 'ligand-chm.out', 'receptor-chm.err', 'receptor-chm.out',
         #'complex.pdb', 'complexAB.pdb', 'ligand.pdb', 'ligandB.pdb', 'receptor.pdb', 'receptorA.pdb',
         #'ligand-chm.psf', 'ligand-chm.cor', 'ligand-chm.pdb', 'receptor-chm.cor', 'receptor-chm.pdb', 'receptor-chm.psf',
+
+        'ligand-chm-facts.pdb', 'ligand-chm-gbsw.pdb', 'ligand-chm-gbmv.pdb',
+        'receptor-chm-facts.pdb', 'receptor-chm-gbsw.pdb', 'receptor-chm-gbmv.pdb',
+        'complex-chm-facts.pdb', 'complex-chm-gbsw.pdb', 'complex-chm-gbmv.pdb',
     ]
 
     wrkdir = os.path.abspath(wrkdir)

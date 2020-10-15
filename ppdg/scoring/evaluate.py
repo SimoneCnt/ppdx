@@ -44,7 +44,7 @@ def all_descriptors():
                 'FoldX_entropy_sidechain', 'FoldX_entropy_mainchain']
     desc += ['Rosetta_dg', 'Rosetta_sasa', 'Rosetta_hbonds']
     # Entropy
-    #desc += ['ENM_R6', 'ENM_EXP']
+    desc += ['ENM_R6', 'ENM_EXP']
     # Binding
     desc += ['Prodigy_IC_NIS']
     #desc += ['LISA']
