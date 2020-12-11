@@ -20,14 +20,14 @@ def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None, medi
         desc_list = ppdg.scoring.all_descriptors()
     descfile = os.path.join(wrkdir, 'descriptors.json')
     if not os.path.isfile(descfile):
-        raise ValueError("Missing file descriptors.json in directory %s\nBe sure to have call get_descriptors before!" % (wrkdir))
+        raise ValueError("Missing file descriptors.json in directory %s\nBe sure to have called get_descriptors before!" % (wrkdir))
     log.info("Reading descriptors from %s" % (descfile))
     with open(descfile, 'r') as fp:
         alldesc = json.load(fp)
     if protocol in alldesc:
         descriptors = alldesc[protocol]
     else:
-        raise ValueError("Could not find protocol %s in %s\nBe sure to have call get_descriptors before!" % (protocol, wrkdir))
+        raise ValueError("Could not find protocol %s in %s\nBe sure to have called get_descriptors before!" % (protocol, wrkdir))
     scores = dict()
     for desc in desc_list:
         if nmodels:
@@ -63,6 +63,8 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
             - Computes the descriptors
         recycling all possible info reading the descriptors.json file in base_wrkdir (if available).
     """
+    if nmodels<1:
+        raise ValueError('You need at least one model, you asked for %d' % (nmodels))
 
     # Check template file exists
     if not os.path.isfile(template):
@@ -213,7 +215,7 @@ def clean(wrkdir=None):
                     #print("Removing", torm)
                     os.remove(torm)
 
-def eval_pkl(pkl, cpxseq, nchains, template, name=None, nmodels=12, ncores=11):
+def eval_pkl(pkl, cpxseq, nchains, template, name=None, wrkdir=None, nmodels=12, ncores=11):
     """
         Evaluate the content of a pkl file given the complex sequence, the 
         number of chains in ligand and receptor, and a template.
@@ -224,12 +226,17 @@ def eval_pkl(pkl, cpxseq, nchains, template, name=None, nmodels=12, ncores=11):
         The pkl should contain in order: the protocol to use, the list of needed
         descriptors, a scaler (not implemented!) and the regression model to use.
     """
-    protocol, desclist, scaler, reg = joblib.load(pkl)
+    protocol, desclist, scaler, reg, x, y = joblib.load(pkl)
+    yc = reg.predict(scaler.transform(x))
+    rmsd = np.sqrt(np.average(np.square(y-yc)))
+    if rmsd>0.001:
+        raise ValueError("Checking the pkl failed! RMSE for test set is %lf " % (rmsd))
     if not name:
         name = hashlib.md5(cpxseq.encode()).hexdigest()
-    wrkdir = os.path.join(ppdg.WRKDIR, name)
+    if not wrkdir:
+        wrkdir = os.path.join(ppdg.WRKDIR, name)
     ppdg.get_descriptors(wrkdir, protocol, template, cpxseq, nchains, desclist, nmodels, ncores=ncores)
-    scores = ppdg.get_descriptors_average(wrkdir, protocol, desc_list=desclist, nmodels=nmodels)
+    scores = ppdg.get_descriptors_average(wrkdir, protocol, desc_list=desclist, nmodels=nmodels, median=True)
     desc = np.array([ scores[d][0] for d in desclist ]).reshape(1, -1)
-    return reg.predict(desc)[0]
+    return reg.predict(scaler.transform(desc))[0]
 
