@@ -18,6 +18,7 @@ def readconfig(fname):
             CHARMM      = "",
             ATTRACT     = "",
             PDBDIR      = "",
+            FFPATH      = "",
             ROSETTA     = "",
             ROSETTABIN  = ""
         )
@@ -33,6 +34,7 @@ def readconfig(fname):
     ppdg.ATTRACT= config.get('ppdg', 'ATTRACT')
     ppdg.FIREDOCK= config.get('ppdg', 'FIREDOCK')
     ppdg.PDBDIR = config.get('ppdg', 'PDBDIR')
+    ppdg.FFPATH = config.get('ppdg', 'FFPATH')
     ppdg.ROSETTA = config.get('ppdg', 'ROSETTA')
     ppdg.ROSETTABIN = config.get('ppdg', 'ROSETTABIN')
 

@@ -38,6 +38,7 @@ def charmify(fname, nsteps=100):
         i += 1
     cmd += 'name=chain_ out=%s ' % (basename)
     cmd += 'nsteps=%d ' % (nsteps)
+    cmd += 'ffpath=%s ' % (ppdg.FFPATH)
     cmd += '-i buildgen.inp >%s 2>&1' % (basename+'.out')
 
     ppdg.link_data('buildgen.inp')

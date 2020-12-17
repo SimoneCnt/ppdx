@@ -4,10 +4,23 @@
 * name = chain_ : the base name for the chain files
 * out = mysystem : outname for psf/cor/pdb
 * nsteps = number of steps of minimization to run
+* ffpath = path of the charmm force field
 *
 
 ! Read FF topology and parameters
-stream /home/simone/opt/ff/charmmff.str
+ioform extended
+read rtf  card name @ffpath/top_all36_prot.rtf
+read para card name @ffpath/par_all36_prot.prm flex
+read rtf  card name @ffpath/top_all36_carb.rtf append
+read para card name @ffpath/par_all36_carb.prm flex append
+read rtf  card name @ffpath/top_all36_lipid.rtf append
+read para card name @ffpath/par_all36_lipid.prm flex append
+read rtf  card name @ffpath/top_all36_na.rtf append
+read para card name @ffpath/par_all36_na.prm flex append
+read rtf  card name @ffpath/top_all36_cgenff.rtf append
+read para card name @ffpath/par_all36_cgenff.prm flex append
+stream @ffpath/toppar_water_ions.str
+
 
 ! Loop over all chains
 set n 1
