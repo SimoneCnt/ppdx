@@ -29,7 +29,7 @@ def charmify(fname, nsteps=100):
 
     chains = pdb.split_by_chain()
     nchains = len(chains)
-    cmd = os.path.join(ppdg.CHARMM, 'charmm')
+    cmd = ppdg.CHARMM
     cmd += ' nc=%d ' % nchains
     i=1
     for ch, pdb in chains.items():

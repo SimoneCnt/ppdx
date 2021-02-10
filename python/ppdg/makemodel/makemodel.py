@@ -64,12 +64,12 @@ def split_complex(wrkdir, nchains):
         sele_lig = ' .or. '.join(['segid %s' % (c) for c in clig])
         ppdg.link_data('extract.inp')
 
-        cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % (os.path.join(ppdg.CHARMM, 'charmm'), 'model-chm', sele_rec, 'receptor-chm', ppdg.FFPATH, 'receptor-chm.out')
+        cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % (ppdg.CHARMM, 'model-chm', sele_rec, 'receptor-chm', ppdg.FFPATH, 'receptor-chm.out')
         ret = ppdg.tools.execute(cmd)
         if ret!=0:
             raise ValueError("Charmm failed.")
 
-        cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % (os.path.join(ppdg.CHARMM, 'charmm'), 'model-chm', sele_lig, 'ligand-chm', ppdg.FFPATH, 'ligand-chm.out')
+        cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % (ppdg.CHARMM, 'model-chm', sele_lig, 'ligand-chm', ppdg.FFPATH, 'ligand-chm.out')
         ret = ppdg.tools.execute(cmd)
         if ret!=0:
             raise ValueError("Charmm failed.")
