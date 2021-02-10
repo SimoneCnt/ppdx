@@ -55,11 +55,9 @@ ic param
 ic fill preserve
 ic build
 
-! Fix hydrogen position and check chirality
-coor chir check
+! Fix hydrogen position
 coor init sele hydrogen end
 hbuild
-coor chir check
 
 ! Add disulfides bonds
 stream disu.str
@@ -68,7 +66,6 @@ autogen angl dihe
 ! Minimize
 mini sd nsteps @nsteps
 mini abnr nsteps @nsteps
-coor chir check
 
 ! Write coordinates and topology
 write psf  card name @out.psf
