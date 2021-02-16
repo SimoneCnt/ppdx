@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(process)s - %(message)s')
 
 import ppdg
-ppdg.readconfig('config-ppdg.ini')
+ppdg.config.cread('config-ppdg.ini')
 
 def compute(abname, agname, pkl, template='tpl_5fyj.pdb', nmodels=12, ncores=1):
     """

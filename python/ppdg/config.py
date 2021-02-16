@@ -4,7 +4,7 @@ import os
 import configparser
 import ppdg
 
-def readconfig(fname):
+def cread(fname):
     '''
         Set some needed variables.
     '''
@@ -38,11 +38,31 @@ def readconfig(fname):
     ppdg.ROSETTA = config.get('ppdg', 'ROSETTA')
     ppdg.ROSETTABIN = config.get('ppdg', 'ROSETTABIN')
 
-def printconfig():
+
+def cget():
+    config = dict()
+    config['WRKDIR']     = ppdg.WRKDIR
+    config['RFSPP']      = ppdg.RFSPP
+    config['CHARMM']     = ppdg.CHARMM
+    config['FFPATH']     = ppdg.FFPATH
+    config['ROSETTA']    = ppdg.ROSETTA
+    config['ROSETTABIN'] = ppdg.ROSETTABIN
+    return config
+
+def cset(config):
+    ppdg.WRKDIR     = config['WRKDIR']
+    ppdg.RFSPP      = config['RFSPP']
+    ppdg.CHARMM     = config['CHARMM']
+    ppdg.FFPATH     = config['FFPATH']
+    ppdg.ROSETTA    = config['ROSETTA']
+    ppdg.ROSETTABIN = config['ROSETTABIN']
+    return
+
+def cprint():
     '''
         Print current settings.
     '''
-    for key, value in ppdg.__dict__.items():
-        if not (key.startswith('__') or key.startswith('_')) and key==key.upper():
-            print("%-10s = %s" % (key, value))
+    c = cget()
+    for key, value in c.items():
+        print("%-10s = %s" % (key, value))
 
