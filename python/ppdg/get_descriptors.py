@@ -91,7 +91,7 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
             alldesc = json.load(fp)
         if protocol in alldesc:
             desc = alldesc[protocol]
-    desc_flat = _switch_desc_format(desc)
+    desc_flat = ppdg.tools.switch_desc_format(desc)
 
     # Make a list of what we need to compute
     to_compute = list()
@@ -114,7 +114,7 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
         desc_flat[str(nmodel)] = scores
         
     # Write descriptors to file
-    desc2 = _switch_desc_format(desc_flat)
+    desc2 = ppdg.tools.switch_desc_format(desc_flat)
     if desc2!=desc:
         alldesc[protocol] = desc2
         log.info("Writing descriptors to %s" % (descfile))
@@ -149,24 +149,6 @@ def _get_descriptors_core(base_wrkdir, protocol, nmodel, template, sequence, nch
     scores2 = ppdg.scoring.evaluate(wrkdir, desc_wanted, desc_have, force_calc)
     scores.update(scores2)
     return (nmodel, scores)
-
-
-def _switch_desc_format(descriptors):
-    """
-        Convert dict from 
-            index - descriptor - value
-        to
-            descriptor - index - value
-        and vice versa.
-        For internal use only...
-    """
-    desc_flat = dict()
-    for key, values in descriptors.items():
-        for index, value in values.items():
-            if not index in desc_flat.keys():
-                desc_flat[index] = dict()
-            desc_flat[index][key] = float(value)
-    return desc_flat
 
 
 def clean(wrkdir=None):
