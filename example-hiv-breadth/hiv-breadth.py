@@ -3,7 +3,6 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from multiprocessing import Pool
 
 import logging
 log = logging.getLogger(__name__)
@@ -15,34 +14,6 @@ logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(leve
 import ppdg
 ppdg.config.cread('config-ppdg.ini')
 
-def compute(abname, agname, pkl, template='tpl_5fyj.pdb', nmodels=12, ncores=1):
-    """
-        Utility function to prepare the inputs for ppdg.eval_pkl
-        pkl: contains the scoring function
-        template: a pdb structure to use as a template
-        nmodels: the number of models to create and comput averages (usually between 5 and 15 are good numbers)
-        ncores: number of cores to run in parallel
-    """
-    # Gather the sequences of the antibody and the antigen. We need a single sequence with "/" as chain separator.
-    abname = abname.upper()
-    agname = agname.upper()
-    sequences = ppdg.tools.read_multi_fasta('sequences.seq')
-    sequences.update(ppdg.tools.read_multi_fasta('seaman.seq'))
-    abseq = sequences[abname]
-    agseq = sequences[agname]
-    cpxseq = '%s/%s' % (agseq, abseq)
-    # Number of chains in the receptor (the antigen) and ligand (the antibody)
-    nchains = (1, 2)
-    # A custom name, whatever you like
-    name = '%s__%s' % (agname, abname)
-    name = name.lower()
-    # Working directory for this protein-protein complex
-    wrkdir = os.path.join(ppdg.WRKDIR, name)
-    # Compute the binding affinity
-    # Specify ncores=n if you want to run in parallel using n cores.
-    dg = ppdg.eval_pkl(pkl, cpxseq, nchains, template, name=name, wrkdir=wrkdir, nmodels=nmodels, ncores=ncores)
-    return dg
-
 def main():
 
     # Set the working directory
@@ -51,28 +22,33 @@ def main():
     # Name of the pkl file containing the details of the scoring function
     PKLFILE = 'regression-hiv-rfha-veryfast-6224.pkl'
 
+    # Read sequences
+    sequences = ppdg.tools.read_multi_fasta('sequences.seq')
+    sequences.update(ppdg.tools.read_multi_fasta('seaman.seq'))
+
     # Get the list of antigens in the Seaman panel
     SEAMAN = ppdg.tools.read_multi_fasta('seaman.seq').keys()
 
     # Compute the binding affinity for the VRC01 and VRC01GL antibodies against the BG505 SOSIP antigen
-    dg_vrc01   = compute('VRC01',   'BG505', PKLFILE, 'tpl_5fyj.pdb', ncores=6)
-    dg_vrc01gl = compute('VRC01GL', 'BG505', PKLFILE, 'tpl_5fyj.pdb', ncores=6)
-    print("Binding affinity VRC01       : %8.3f" % (dg_vrc01))
-    print("Binding affinity VRC01GL     : %8.3f" % (dg_vrc01gl))
+    inputs = list()
+    inputs.append(['BG505_VRC01'  , '%s/%s' % (sequences['BG505'], sequences['VRC01'])  , (1,2), 'tpl_5fyj.pdb'])
+    inputs.append(['BG505_VRC01GL', '%s/%s' % (sequences['BG505'], sequences['VRC01GL']), (1,2), 'tpl_5fyj.pdb'])
+    res = ppdg.eval_pkl(PKLFILE, inputs, nmodels=12)
+    print("Binding affinity VRC01       : %8.3f" % (res['BG505_VRC01']))
+    print("Binding affinity VRC01GL     : %8.3f" % (res['BG505_VRC01GL']))
 
     # Make a list of all dg to compute to evaluate the breadth of VRC01 and VRC01GL
-    to_compute = list()
+    inputs = list()
     for ag in SEAMAN:
-        to_compute.append(['VRC01',   ag, PKLFILE, 'tpl_5fyj.pdb'])
-        to_compute.append(['VRC01GL', ag, PKLFILE, 'tpl_5fyj.pdb'])
+        inputs.append(['%s_VRC01'%(ag)  , '%s/%s' % (sequences[ag], sequences['VRC01'])  , (1,2), 'tpl_5fyj.pdb'])
+        inputs.append(['%s_VRC01GL'%(ag), '%s/%s' % (sequences[ag], sequences['VRC01GL']), (1,2), 'tpl_5fyj.pdb'])
 
-    # Compute everything in parallel (using 10 cores here)
-    with Pool(10) as p:
-        p.starmap(compute, to_compute)
+    # Compute everything
+    res = ppdg.eval_pkl(PKLFILE, inputs, nmodels=12, config='pool:12')
 
     # Recall all computed values and save them into two arrays
-    vrc01   = np.array([ compute('VRC01',   ag, PKLFILE, 'tpl_5fyj.pdb') for ag in SEAMAN ]).ravel()
-    vrc01gl = np.array([ compute('VRC01GL', ag, PKLFILE, 'tpl_5fyj.pdb') for ag in SEAMAN ]).ravel()
+    vrc01   = np.array([ res['%s_VRC01'%(ag)] for ag in SEAMAN ])
+    vrc01gl = np.array([ res['%s_VRC01GL'%(ag)] for ag in SEAMAN ])
 
     # Compute the breadth. Use a cutoff energy of -9.6
     b_vrc01   = np.sum(vrc01<-9.6)/len(SEAMAN)

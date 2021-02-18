@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from .pdb import Pdb
-from .get_descriptors import get_descriptors, get_descriptors_average, clean, eval_pkl
+from .compute import eval_descriptors, get_descriptors, eval_pkl, compute_core, clean
 from .mmgbsa import mmgbsa
 from .runomm import runomm
 

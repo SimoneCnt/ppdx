@@ -1,21 +1,46 @@
 #!/usr/bin/env python3
 
 import os, json
-import hashlib
 import joblib
 import numpy as np
-from multiprocessing import Pool
 import ppdg
+
 import logging
 log = logging.getLogger(__name__)
 
-def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None, median=False):
+
+def eval_descriptors(protocol, desclist, inputs, nmodels=12, config=None):
+    """
+        Main function!
+        Given:
+            - The protocol to build the atomistic model of the protein-protein complex
+            - A PDB file to use as template for the modelling
+            - The sequence of the whole protein-protein complex
+            - A tuple indicating how many chains are in the receptor and in the ligand [ nchains = ( nchains_rec, nchains_lig) ]
+            - Which descriptors do you want to compute
+            and
+            - How many models you want to make (to make nice averages)
+        This function
+            - Makes the models
+            - Computes the descriptors
+        recycling all possible info reading the descriptors.json file in base_wrkdir (if available).
+    """
+    new_inputs = list()
+    for name, cpxseq, nchains, template in inputs:
+        for nmodel in range(nmodels):
+            data = [name, protocol, template, cpxseq, nchains, desclist, nmodel, False]
+            new_inputs.append(data)
+    _run(new_inputs, config)
+
+
+def get_descriptors(name, protocol, desc_list=None, nmodels=None, median=False):
     """
         Return the average and standard error for the descriptors in 
         desc_list for the first nmodels.
         All descriptors have to be already computed by get_descriptors,
         otherwise an error is thrown.
     """
+    wrkdir = os.path.join(ppdg.WRKDIR, name)
     if not desc_list:
         desc_list = ppdg.scoring.all_descriptors()
     descfile = os.path.join(wrkdir, 'descriptors.json')
@@ -46,25 +71,88 @@ def get_descriptors_average(wrkdir, protocol, desc_list=None, nmodels=None, medi
     return scores
 
 
-def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wanted, nmodels, ncores=1, force_calc=False):
-    """
-        Main function!
-        Given:
-            - The working directory to use
-            - The protocol to build the atomistic model of the protein-protein complex
-            - A PDB file to use as template for the modelling
-            - The sequence of the whole protein-protein complex
-            - A tuple indicating how many chains are in the receptor and in the ligand [ nchains = ( nchains_rec, nchains_lig) ]
-            - Which descriptors do you want to compute
-            and
-            - How many models you want to make (to make nice averages)
-        This function
-            - Makes the models
-            - Computes the descriptors
-        recycling all possible info reading the descriptors.json file in base_wrkdir (if available).
-    """
-    if nmodels<1:
-        raise ValueError('You need at least one model, you asked for %d' % (nmodels))
+def eval_pkl(pkl, inputs, nmodels=12, config=None):
+
+    unpk = joblib.load(pkl)
+    if len(unpk)==4:
+        protocol, desclist, scaler, reg = unpk
+    elif len(unpk)==6:
+        protocol, desclist, scaler, reg, x, y = unpk
+        yc = reg.predict(scaler.transform(x))
+        rmsd = np.sqrt(np.average(np.square(y-yc)))
+        if rmsd>0.001:
+            raise ValueError("Checking the pkl failed! RMSE for test set is %lf " % (rmsd))
+    else:
+        raise ValueError("Error unpacking the pkl file. Should have 4 or 6 elements, but found %d" % (len(unpk)))
+
+    # Compute all descriptors
+    new_inputs = list()
+    for name, cpxseq, nchains, template in inputs:
+        for nmodel in range(nmodels):
+            data = [name, protocol, template, cpxseq, nchains, desclist, nmodel, False]
+            new_inputs.append(data)
+    _run(new_inputs, config)
+
+    # Compute the pkl
+    dg = dict()
+    for name,_,_,_ in inputs:
+        scores = get_descriptors(name, protocol, desc_list=desclist, nmodels=nmodels, median=True)
+        desc = np.array([ scores[d][0] for d in desclist ]).reshape(1, -1)
+        if scaler:
+            desc = scaler.transform(desc)
+        dg[name] = reg.predict(desc)[0]
+
+    return dg
+
+
+def _run(inputs, config):
+    if not config:
+        config = 'pool'
+    if config=='serial':
+        return _run_serial(inputs)
+    elif config.startswith('pool'):
+        splt = config.split(':')
+        if len(splt)==1:
+            pool, ncores = splt[0], ""
+        else:
+            pool, ncores = splt[0], splt[1]
+        if pool!='pool':
+            raise ValueError('Could not understand string <%s>' % (config))
+        if ncores.isdigit():
+            ncores = int(ncores)
+            if ncores<1: ncores=None
+        else:
+            ncores = None
+        return _run_pool(inputs, ncores)
+    else:
+        raise ValueError('Could not understand string <%s>' % (config))
+
+
+def _run_serial(inputs):
+    for data in inputs:
+        name, protocol, _, _, _, _, nmodel, _ = data
+        key = '%s__%s__%s' % (name, protocol, str(nmodel))
+        key2, scores = ppdg.compute_core(*data)
+        assert (key==key2), "Something very wrong happened :("
+        _save(name, protocol, nmodel, scores)
+
+
+def _run_pool(inputs, ncores):
+    from  multiprocessing import Pool
+    results = dict()
+    with Pool(ncores) as p:
+        results = p.starmap(ppdg.compute_core, inputs)
+    for data, res in zip(inputs, results):
+        name, protocol, _, _, _, _, nmodel, _ = data
+        key = '%s__%s__%s' % (name, protocol, str(nmodel))
+        key2, scores = res
+        assert (key==key2), "Something very wrong happened :("
+        _save(name, protocol, nmodel, scores)
+
+
+def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmodel, force_calc):
+
+    base_wrkdir = os.path.join(ppdg.WRKDIR, name)
 
     # Check template file exists
     if not os.path.isfile(template):
@@ -94,47 +182,17 @@ def get_descriptors(base_wrkdir, protocol, template, sequence, nchains, desc_wan
     desc_flat = ppdg.tools.switch_desc_format(desc)
 
     # Make a list of what we need to compute
-    to_compute = list()
-    for nmodel in range(nmodels):
-        if str(nmodel) in desc_flat.keys():
-            desc_have = desc_flat[str(nmodel)]
-        else:
-            desc_have = dict()
-        to_compute.append([base_wrkdir, protocol, nmodel, template, sequence, nchains, desc_have, desc_wanted, force_calc])
-
-    # Compute everything, if possibly in parallel
-    if ncores<2:
-        results = list()
-        for compute in to_compute:
-            results.append(_get_descriptors_core(*compute))
+    if str(nmodel) in desc_flat.keys():
+        desc_have = desc_flat[str(nmodel)]
     else:
-        with Pool(ncores) as p:
-            results = p.starmap(_get_descriptors_core, to_compute)
-    for nmodel, scores in results:
-        desc_flat[str(nmodel)] = scores
-        
-    # Write descriptors to file
-    desc2 = ppdg.tools.switch_desc_format(desc_flat)
-    if desc2!=desc:
-        alldesc[protocol] = desc2
-        log.info("Writing descriptors to %s" % (descfile))
-        with open(descfile, 'w') as fp:
-            json.dump(alldesc, fp, indent=4, sort_keys=True)
-    return alldesc
-
-
-def _get_descriptors_core(base_wrkdir, protocol, nmodel, template, sequence, nchains, desc_have, desc_wanted, force_calc=False):
-    """
-        Core function to make one model and get the descriptors.
-        Do not call this directly, but use get_descriptors.
-    """
+        desc_have = dict()
     desc_set = set()
     for desc in desc_wanted:
         if desc not in desc_have.keys() or force_calc:
             desc_set.add(desc)
-    if len(desc_set)==0:
-        return (nmodel, desc_have)
-    wrkdir = os.path.join(base_wrkdir, protocol+'_%d' % (nmodel))
+
+    # Compute
+    wrkdir = os.path.join(base_wrkdir, protocol+'_%s' % (str(nmodel)))
     scores = ppdg.makemodel.make_model(wrkdir, protocol, template, sequence)
     nchfile = os.path.join(wrkdir, 'nchains.dat')
     if not os.path.isfile(nchfile):
@@ -148,7 +206,33 @@ def _get_descriptors_core(base_wrkdir, protocol, nmodel, template, sequence, nch
     ppdg.makemodel.split_complex(wrkdir, nchains)
     scores2 = ppdg.scoring.evaluate(wrkdir, desc_wanted, desc_have, force_calc)
     scores.update(scores2)
-    return (nmodel, scores)
+    key = '%s__%s__%s' % (name, protocol, str(nmodel))
+    return key, scores
+
+
+def _save(name, protocol, nmodel, scores):
+
+    base_wrkdir = os.path.join(ppdg.WRKDIR, name)
+
+    # Read the descriptors from file
+    alldesc = dict()
+    desc = dict()
+    descfile = os.path.join(base_wrkdir, 'descriptors.json')
+    if os.path.isfile(descfile):
+        with open(descfile, 'r') as fp:
+            alldesc = json.load(fp)
+        if protocol in alldesc:
+            desc = alldesc[protocol]
+    desc_flat = ppdg.tools.switch_desc_format(desc)
+    desc_flat[str(nmodel)] = scores
+
+    # Write descriptors to file
+    desc2 = ppdg.tools.switch_desc_format(desc_flat)
+    if desc2!=desc:
+        alldesc[protocol] = desc2
+        with open(descfile, 'w') as fp:
+            json.dump(alldesc, fp, indent=4, sort_keys=True)
+    return
 
 
 def clean(wrkdir=None):
@@ -196,29 +280,4 @@ def clean(wrkdir=None):
                 if os.path.isfile(torm):
                     #print("Removing", torm)
                     os.remove(torm)
-
-def eval_pkl(pkl, cpxseq, nchains, template, name=None, wrkdir=None, nmodels=12, ncores=11):
-    """
-        Evaluate the content of a pkl file given the complex sequence, the 
-        number of chains in ligand and receptor, and a template.
-        name is the name of the complex. If not given, a name is generate as the
-        hash of the sequence. nmodels is how many models to generate, and ncores
-        the number of cores to use for parallel execution. Leave at least one free
-        core, otherwise the code my deadlock.
-        The pkl should contain in order: the protocol to use, the list of needed
-        descriptors, a scaler (not implemented!) and the regression model to use.
-    """
-    protocol, desclist, scaler, reg, x, y = joblib.load(pkl)
-    yc = reg.predict(scaler.transform(x))
-    rmsd = np.sqrt(np.average(np.square(y-yc)))
-    if rmsd>0.001:
-        raise ValueError("Checking the pkl failed! RMSE for test set is %lf " % (rmsd))
-    if not name:
-        name = hashlib.md5(cpxseq.encode()).hexdigest()
-    if not wrkdir:
-        wrkdir = os.path.join(ppdg.WRKDIR, name)
-    ppdg.get_descriptors(wrkdir, protocol, template, cpxseq, nchains, desclist, nmodels, ncores=ncores)
-    scores = ppdg.get_descriptors_average(wrkdir, protocol, desc_list=desclist, nmodels=nmodels, median=True)
-    desc = np.array([ scores[d][0] for d in desclist ]).reshape(1, -1)
-    return reg.predict(scaler.transform(desc))[0]
 

@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name = 'ppdg',
-    version = '0.1',
+    version = '0.2',
     description = 'Build protein-protein complexes and calculate binding affinity',
     long_description = readme(),
     url = 'https://github.com/SimoneCnt/ppdg',
