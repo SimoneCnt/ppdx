@@ -12,7 +12,7 @@ class AGBNPScorer(modeller.terms.AssessEnergyTerm):
     name = 'AGBNP Implicit Solvent'
 
     def __init__(self, library='${LIB}/solv.lib', solvation_model=1,
-                 cutoff=8.0, group=modeller.physical.gbsa):
+                 cutoff=12.0, group=modeller.physical.gbsa):
         modeller.terms.energy_term.__init__(self)
         self.__library = library
         self.__solvation_model = solvation_model
@@ -48,7 +48,6 @@ def agbnp(wrkdir):
         cpx = modeller.selection(mdl.chains[:])
         lig = modeller.selection(mdl.chains[0])
         rec = modeller.selection(mdl.chains[1])
-        #agbnp = modeller.gbsa.Scorer()
         agbnp = AGBNPScorer()
         score = cpx.assess(agbnp) - rec.assess(agbnp) - lig.assess(agbnp)
         sys.stdout.flush()
