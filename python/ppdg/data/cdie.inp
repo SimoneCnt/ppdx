@@ -1,16 +1,36 @@
 * Calculate energy
 * @sysname 
+* @domini
 *
 
-! Load the force field
-stream /home/simone/opt/ff/charmmff.str
+! Read FF topology and parameters
+ioform extended
+read rtf  card name @ffpath/top_all36_prot.rtf
+read para card name @ffpath/par_all36_prot.prm flex
+read rtf  card name @ffpath/top_all36_carb.rtf append
+read para card name @ffpath/par_all36_carb.prm flex append
+read rtf  card name @ffpath/top_all36_lipid.rtf append
+read para card name @ffpath/par_all36_lipid.prm flex append
+read rtf  card name @ffpath/top_all36_na.rtf append
+read para card name @ffpath/par_all36_na.prm flex append
+read rtf  card name @ffpath/top_all36_cgenff.rtf append
+read para card name @ffpath/par_all36_cgenff.prm flex append
+stream @ffpath/toppar_water_ions.str
 
 read psf  card name @sysname.psf
 read coor card name @sysname.cor
 
 nbond atom cdiel switch vatom vswitch cutnb 20.0 ctofnb 18.0 ctonnb 16.0
 
-mini abnr nsteps 100
+if @domini .eq. 1 then
+
+    mini sd nsteps 50
+    mini abnr nsteps 100
+
+    write psf  card name @sysname-cdie.psf
+    write coor card name @sysname-cdie.cor
+
+endif
 
 ener
 

@@ -47,7 +47,7 @@ def charmify(fname, nsteps=100):
     ret = ppdg.tools.execute(cmd)
     os.chdir(basepath)
     if ret!=0:
-        raise ValueError("Charmm failed.")
+        raise ValueError("Charmm failed while running < %s > in %s" % (cmd, wrkdir))
 
 
 #def charmm_model(wrkdir, tpl_complex, tpl_receptor, tpl_ligand):
