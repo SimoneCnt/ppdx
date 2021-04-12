@@ -2,9 +2,16 @@
 *
 
 set dcut 2.3 ! SG atoms separated by less than this distance are assumed to be connected via a disulfide bridge
-set cmdfile "add_disulfide.str"
-system "echo '*' disulfide bridge patches > @CMDFILE"
-system "echo '*' >> @CMDFILE"
+!set cmdfile "add_disulfide.str"
+!system "echo '*' disulfide bridge patches > @CMDFILE"
+!system "echo '*' >> @CMDFILE"
+
+open unit 30 name add_disulfide.str write form
+
+echu 30
+
+echo * disulfide bridge patches
+echo *
 
 define sgs sele resname CYS .and. type SG end
 if ?nsel .lt. 2 return
@@ -20,9 +27,10 @@ label disuloop1
  set res2 ?selresi
  ! compute distance
  quick sele bynum @{s1} end sele bynum @{s2} end
- echo ?dist
+ !echo ?dist
  if ?dist lt @dcut then ! update patch script
-  system "echo 'patch disu @{SEG1} @{RES1} @{SEG2} @{RES2}' >> @CMDFILE "
+  !system "echo 'patch disu @{SEG1} @{RES1} @{SEG2} @{RES2}' >> @CMDFILE "
+  echo patch disu @{SEG1} @{RES1} @{SEG2} @{RES2}
   goto break
  endif
  define rest sele rest .and. .not. bynum @{s2} end
@@ -32,6 +40,9 @@ label disuloop1
  define sgs sele sgs .and. .not. ( bynum @{s1} .or. bynum @{s2} ) end
  if ?nsel ge 2 -
 goto disuloop1
+
+close unit 30
+
 ! execute the script
-stream @CMDFILE
+stream add_disulfide.str
 return
