@@ -153,28 +153,14 @@ def _run_pool(inputs, ncores):
 def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmodel, force_calc):
 
     base_wrkdir = os.path.join(ppdg.WRKDIR, name)
-
-    # Check template file exists
-    if not os.path.isfile(template):
-        raise ValueError('Template file %s does not exist!' % (template))
-
-    # Check nchains. A tuple. First is the number of chains in the receptor, 
-    # second the number of chains in the ligand.
-    if len(nchains)!=2:
-        raise ValueError('Cannot understand nchains = %s. Use (nchains_receptor, nchains_ligand).' % (nchains))
-    nchains_rec = nchains[0]
-    nchains_lig = nchains[1]
-    nchains_tot = len(sequence.split('/'))
-    if nchains_rec + nchains_lig != nchains_tot:
-        raise ValueError('You said the receptor has %d chains and the ligand %d, but the sequence has a total of %d chains.' 
-                % (nchains_rec, nchains_lig, nchains_tot))
+    key = '%s__%s__%s' % (name, protocol, str(nmodel))
 
     # Read the descriptors from file
     alldesc = dict()
     desc = dict()
     descfile = os.path.join(base_wrkdir, 'descriptors.json')
     if os.path.isfile(descfile):
-        log.info("Reading descriptors from %s" % (descfile))
+        #log.info("Reading descriptors from %s" % (descfile))
         with open(descfile, 'r') as fp:
             alldesc = json.load(fp)
         if protocol in alldesc:
@@ -190,9 +176,38 @@ def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmode
     for desc in desc_wanted:
         if desc not in desc_have.keys() or force_calc:
             desc_set.add(desc)
+    if not desc_set:
+        return key, dict()
+
+    log.info('We need to compute these new descriptors: %s for key %s' % (desc_set, key))
+
+    # Check if tgz exists
+    wrkdir = os.path.join(base_wrkdir, protocol+'_%s' % (str(nmodel)))
+    if os.path.isfile(wrkdir+'.tgz'):
+        if os.path.isdir(wrkdir):
+            raise ValueError('Both tgz and dir exists for %s' % (wrkdir))
+        log.info('Un-compressing %s.tgz' % (wrkdir))
+        basepath = os.getcwd()
+        os.chdir(base_wrkdir)
+        ppdg.tools.execute('tar -xf %s_%s.tgz && rm %s_%s.tgz' % (protocol, str(nmodel), protocol, str(nmodel)))
+        os.chdir(basepath)
+
+    # Check template file exists
+    if not os.path.isfile(template):
+        raise ValueError('Template file %s does not exist! Working directory is %s' % (template, os.getcwd()))
+
+    # Check nchains. A tuple. First is the number of chains in the receptor, 
+    # second the number of chains in the ligand.
+    if len(nchains)!=2:
+        raise ValueError('Cannot understand nchains = %s. Use (nchains_receptor, nchains_ligand).' % (nchains))
+    nchains_rec = nchains[0]
+    nchains_lig = nchains[1]
+    nchains_tot = len(sequence.split('/'))
+    if nchains_rec + nchains_lig != nchains_tot:
+        raise ValueError('You said the receptor has %d chains and the ligand %d, but the sequence has a total of %d chains.' 
+                % (nchains_rec, nchains_lig, nchains_tot))
 
     # Compute
-    wrkdir = os.path.join(base_wrkdir, protocol+'_%s' % (str(nmodel)))
     scores = ppdg.makemodel.make_model(wrkdir, protocol, template, sequence)
     nchfile = os.path.join(wrkdir, 'nchains.dat')
     if not os.path.isfile(nchfile):
@@ -206,11 +221,13 @@ def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmode
     ppdg.makemodel.split_complex(wrkdir, nchains)
     scores2 = ppdg.scoring.evaluate(wrkdir, desc_wanted, desc_have, force_calc)
     scores.update(scores2)
-    key = '%s__%s__%s' % (name, protocol, str(nmodel))
     return key, scores
 
 
 def _save(name, protocol, nmodel, scores):
+
+    if not scores:
+        return
 
     base_wrkdir = os.path.join(ppdg.WRKDIR, name)
 
@@ -270,14 +287,21 @@ def clean(wrkdir=None):
     ]
 
     wrkdir = os.path.abspath(wrkdir)
+    basepath = os.getcwd()
     sysdir = [os.path.join(wrkdir, o) for o in os.listdir(wrkdir) if os.path.isdir(os.path.join(wrkdir, o))]
 
     for sysname in sysdir:
-        modelsdirs = [os.path.join(sysname, o) for o in os.listdir(sysname) if os.path.isdir(os.path.join(sysname, o))]
+        os.chdir(sysname)
+        modelsdirs = [o for o in os.listdir(sysname) if os.path.isdir(o)]
         for model in modelsdirs:
+            if os.path.isfile('%s.tgz' % (model)):
+                raise ValueError('Both folder and tgz exist for %s/%s' % (sysname, model))
+            log.info('Cleaning dir %s/%s' % (sysname, model))
             for f in filelist:
                 torm = os.path.join(model, f)
                 if os.path.isfile(torm):
-                    #print("Removing", torm)
                     os.remove(torm)
+            #log.info('Compressing dir %s/%s' % (sysname, model))
+            ppdg.tools.execute('tar --remove-files -czf %s.tgz %s' % (model, model))
+        os.chdir(basepath)
 
