@@ -27,9 +27,6 @@ def make_model(wrkdir, protocol, tpl_complex, seq_complex): #, tpl_receptor=None
         time = modeller_slow(seq_complex, tpl_complex, wrkdir)
     elif protocol == 'rosetta':
         time = rosetta1(seq_complex, tpl_complex, wrkdir)
-    #if protocol == 'charmm':
-    #    time = charmm_model(wrkdir, tpl_complex, tpl_receptor, tpl_ligand)
-    #    return time
     else:
         raise ValueError('Unknown requested protocol %s. Valid values are modeller_veryfast, modeller_fast, modeller_slow, and rosetta.' % protocol)
     return {'>TIME_makemodel':time}
@@ -95,45 +92,5 @@ def split_complex(wrkdir, nchains):
         lig.write('ligandB.pdb')
         cpx.write('complexAB.pdb')
 
-
     os.chdir(basepath)
-
-        
-
-#def split_model(wrkdir, nchains):
-#    """
-#        Split the model.pdb in wrkdir in a ligand.pdb, receptor.pdb, 
-#        complex.pdb and complexAB.pdb. The last contains the whole receptor 
-#        as chain A and the full ligand as chain B. Useful for ZRANK.
-#        nchains is a tuple containing the number of chains in the receptor 
-#        and the number of chains in the ligand.
-#    """
-#    basepath = os.getcwd()
-#    os.chdir(wrkdir)
-#    if not os.path.isfile('ligand.pdb') or not os.path.isfile('receptor.pdb') or not os.path.isfile('complex.pdb') or not os.path.isfile('complexAB.pdb'):
-#        log.info('Splitting model.pdb in ligand, receptor and complex.')
-#        cpx = ppdg.Pdb(os.path.join(wrkdir, 'model-chm.pdb'))
-#        cpx.set_beta(1.0)
-#        cpx.set_occupancy(1.0)
-#        nchains_tot = len(cpx.split_by_chain())
-#        lrec = nchains[0]
-#        llig = nchains[1]
-#        if llig+lrec!=nchains_tot:
-#            raise ValueError('PDB %s contains %d chains, but ligand (%d) and receptor (%d) contain %d' % (wrkdir, nchains_tot, llig, lrec, llig+lrec))
-#        alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-#        crec = alphabet[:lrec]
-#        clig = alphabet[lrec:nchains_tot]
-#        rec = cpx.extract(chain=crec)
-#        lig = cpx.extract(chain=clig)
-#        cpx = rec+lig
-#        lig.write('ligand.pdb')
-#        rec.write('receptor.pdb')
-#        cpx.write('complex.pdb')
-#        recA = rec
-#        recA.set_chain('A')
-#        ligB = lig
-#        ligB.set_chain('B')
-#        cpxAB = recA + ligB
-#        cpxAB.write('complexAB.pdb')
-#    os.chdir(basepath)
 

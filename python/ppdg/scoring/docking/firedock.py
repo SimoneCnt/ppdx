@@ -73,6 +73,6 @@ def firedock(wrkdir):
     return desc
 
 if __name__=='__main__':
-    ppdg.readconfig('config-ppdg.ini')
+    ppdg.config.cread('config-ppdg.ini')
     print(firedock(sys.argv[1]))
 

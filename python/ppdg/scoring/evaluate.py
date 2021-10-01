@@ -32,11 +32,11 @@ def all_descriptors():
     desc += ['DOPE', 'DOPE-HR']
     # Implicit Solvents
     desc += ['AGBNP']
-    desc += ['FACTS_ELEC', 'FACTS_VDW', 'FACTS_GB', 'FACTS_ASP']
-    desc += ['GBMV_ELEC', 'GBMV_VDW', 'GBMV_GB', 'GBMV_ASP']
-    desc += ['GBSW_ELEC', 'GBSW_VDW', 'GBSW_GB', 'GBSW_ASP']
-    desc += ['CDIE_ELEC', 'CDIE_VDW']
-    desc += ['RDIE_ELEC', 'RDIE_VDW']
+    desc += ['FACTS_ELEC', 'FACTS_VDW', 'FACTS_GB', 'FACTS_ASP', 'FACTS_POL', 'FACTS_TOT']
+    desc += ['GBMV_ELEC', 'GBMV_VDW', 'GBMV_GB', 'GBMV_ASP', 'GBMV_POL', 'GBMV_TOT']
+    desc += ['GBSW_ELEC', 'GBSW_VDW', 'GBSW_GB', 'GBSW_ASP', 'GBSW_POL', 'GBSW_TOT']
+    desc += ['CDIE_ELEC', 'CDIE_VDW', 'CDIE_TOT']
+    desc += ['RDIE_ELEC', 'RDIE_VDW', 'RDIE_TOT']
     desc += ['OMM_vacuum', 'OMM_HCT', 'OMM_OBC1', 'OMM_OBC2', 'OMM_GBn', 'OMM_GBn2']
     # Folding
     desc += ['FoldX', 'FoldX_backbone_hbond', 'FoldX_sidechain_hbond', 'FoldX_vdw', 

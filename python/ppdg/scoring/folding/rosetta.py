@@ -20,16 +20,16 @@ def rosetta(wrkdir):
     with open('rosetta_relax', 'w') as fp:
         fp.write("ramp_repack_min 1 0.1 0.0\n")
         fp.write("accept_to_best\n")
-    ret = ppdg.tools.execute(ppdg.ROSETTABIN+"/relax.static.linuxgccrelease -s complexAB.pdb -relax:script rosetta_relax -default_max_cycles 200 >rosetta_relax.out 2>&1")
+    ret = ppdg.tools.execute(ppdg.ROSETTABIN+"/relax.static.linuxgccrelease -s complexAB.pdb -relax:script rosetta_relax -default_max_cycles 200 -overwrite >rosetta_relax.out 2>&1")
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("Rosetta relax failed!")
+        raise ValueError("Rosetta relax failed in %s" % (wrkdir))
 
     # Score
-    ret = ppdg.tools.execute(ppdg.ROSETTABIN+"/InterfaceAnalyzer.static.linuxgccrelease -s complexAB_0001.pdb -interface A_B -pack_input true -out:file:score_only -overwrite rosetta_score_interface.sc >rosetta_score.out 2>&1")
+    ret = ppdg.tools.execute(ppdg.ROSETTABIN+"/InterfaceAnalyzer.static.linuxgccrelease -s complexAB_0001.pdb -interface A_B -pack_input true -overwrite -out:file:score_only rosetta_score_interface.sc >rosetta_score.out 2>&1")
     if ret!=0:
         os.chdir(basepath)
-        raise ValueError("Rosetta score failed!")
+        raise ValueError("Rosetta score failed in %s" % (wrkdir))
 
     # Parse output
     with open('rosetta_score_interface.sc', 'r') as fp:

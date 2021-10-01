@@ -13,7 +13,6 @@ def charmify(fname, nsteps=100):
     basename = ''.join(name.split('.')[0:-1]) + '-chm'
 
     if os.path.isfile(os.path.join(wrkdir, basename+'.psf')) and os.path.isfile(os.path.join(wrkdir, basename+'.pdb')):
-        #log.info('Charmm outputs already present, recycling data!')
         return
     else:
         log.info("Charmify-ing pdb %s" % (fname))
@@ -48,26 +47,4 @@ def charmify(fname, nsteps=100):
     os.chdir(basepath)
     if ret!=0:
         raise ValueError("Charmm failed while running < %s > in %s" % (cmd, wrkdir))
-
-
-#def charmm_model(wrkdir, tpl_complex, tpl_receptor, tpl_ligand):
-
-    # Make working directory and cd into it
-#    if not os.path.isdir(wrkdir):
-#        os.makedirs(wrkdir)
-#    basepath = os.getcwd()
-#    os.chdir(wrkdir)
-#
-#    # Chamify!
-#    for name, tpl in zip(['complex','receptor','ligand'], [tpl_complex,tpl_receptor,tpl_ligand]):
-#        if not os.path.isdir(name):
-#            os.makedirs(name)
-#        if not os.path.isfile(os.path.join(name, 'model.pdb')):
-#            shutil.copy2(tpl, os.path.join(name, 'template.pdb'))
-#            charmify(os.path.join(name, 'template.pdb'))
-#            os.symlink('template-chm.pdb', os.path.join(name, 'model.pdb'))
-#            os.symlink('template-chm.cor', os.path.join(name, 'model.cor'))
-#            os.symlink('template-chm.psf', os.path.join(name, 'model.psf'))
-#
-#    os.chdir(basepath)
 

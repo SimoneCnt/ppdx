@@ -2,8 +2,6 @@
 
 from .pdb import Pdb
 from .compute import eval_descriptors, get_descriptors, eval_pkl, compute_core, clean
-from .mmgbsa import mmgbsa
-from .runomm import runomm
 
 from . import config
 from . import tools
