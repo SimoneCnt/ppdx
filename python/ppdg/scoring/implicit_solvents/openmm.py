@@ -2,9 +2,9 @@
 
 import os, sys
 from timeit import default_timer as timer
-from simtk.openmm.app import *
-from simtk.openmm import *
-from simtk.unit import *
+from openmm.app import *
+from openmm import *
+from openmm.unit import *
 import ppdg
 import logging
 log = logging.getLogger(__name__)
