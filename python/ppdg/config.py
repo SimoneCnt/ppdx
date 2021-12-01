@@ -17,6 +17,7 @@ def cread(fname):
             PYDOCK      = "",
             CHARMM      = "",
             ATTRACT     = "",
+            FIREDOCK    = "",
             PDBDIR      = "",
             FFPATH      = "",
             ROSETTA     = "",
