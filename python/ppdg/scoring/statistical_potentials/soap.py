@@ -2,10 +2,6 @@
 
 import os, sys
 from timeit import default_timer as timer
-import modeller
-import modeller.soap_pp
-import modeller.soap_protein_od
-import ppdg
 import logging
 log = logging.getLogger(__name__)
 
@@ -18,6 +14,9 @@ def soap_pp(wrkdir):
             interfaces and loops", Bioinformatics, vol. 29, no. 24, 
             pp. 3158-3166, 2013.
     """
+    import modeller
+    import modeller.soap_pp
+
     time_start = timer()
     log.info("Getting SOAP-PP-Pair scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')
@@ -42,8 +41,6 @@ def soap_pp(wrkdir):
     return desc
 
 
-ppdg._soap_scorer = False
-
 def soap_protein_od(wrkdir):
     """
         Get SOAP-Protein score for protein-protein.
@@ -53,10 +50,10 @@ def soap_protein_od(wrkdir):
             interfaces and loops", Bioinformatics, vol. 29, no. 24, 
             pp. 3158-3166, 2013.
     """
-    if ppdg._soap_scorer==False:
-        log.info('Reading SOAP Protein OD Scorer...')
-        scorer = modeller.soap_protein_od.Scorer()
-        ppdg._soap_scorer = scorer
+    import modeller
+    import modeller.soap_protein_od
+    log.info('Reading SOAP Protein OD Scorer...')
+    soap_protein_od = modeller.soap_protein_od.Scorer()
 
     time_start = timer()
     log.info("Getting SOAP-Protein-OD scoring...")
@@ -72,7 +69,6 @@ def soap_protein_od(wrkdir):
         cpx = modeller.selection(mdl.chains[:])
         lig = modeller.selection(mdl.chains[0])
         rec = modeller.selection(mdl.chains[1])
-        soap_protein_od = ppdg._soap_scorer
         score = cpx.assess(soap_protein_od) - rec.assess(soap_protein_od) - lig.assess(soap_protein_od)
         sys.stdout.flush()
         sys.stdout = _stdout

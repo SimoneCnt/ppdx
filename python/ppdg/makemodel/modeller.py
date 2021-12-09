@@ -3,7 +3,6 @@
 import ppdg
 from timeit import default_timer as timer
 import os, sys, random
-import modeller, modeller.automodel
 import logging
 log = logging.getLogger(__name__)
 
@@ -20,6 +19,7 @@ def modeller_generic(sequence, template, wrkdir, fast):
     """
         Build one model for the complex. Save it in the wrkdir folder.
     """
+    import modeller, modeller.automodel
     # Make working directory and enter it
     if os.path.isdir(wrkdir):
         if os.path.isfile(os.path.join(wrkdir, 'model.pdb')):

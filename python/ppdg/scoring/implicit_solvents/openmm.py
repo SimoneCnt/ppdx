@@ -2,35 +2,38 @@
 
 import os, sys
 from timeit import default_timer as timer
-from openmm.app import *
-from openmm import *
-from openmm.unit import *
-import ppdg
 import logging
 log = logging.getLogger(__name__)
 
 def get_omm_ener(name, solvent):
-    psf    = CharmmPsfFile(name+'-chm.psf')
-    pdb    = PDBFile(name+'-chm.pdb')
-    params = CharmmParameterSet('/home/simone/opt/ff/charmmff_jul18.prm')
+    import openmm as omm
+    import openmm.unit as unit
+    if solvent=='HCT': solvent=omm.HCT
+    if solvent=='OBC1': solvent=omm.OBC1
+    if solvent=='OBC2': solvent=omm.OBC2
+    if solvent=='GBn': solvent=omm.GBn
+    if solvent=='GBn2': solvent=omm.GBn2
+    psf    = omm.app.CharmmPsfFile(name+'-chm.psf')
+    pdb    = omm.app.PDBFile(name+'-chm.pdb')
+    params = omm.app.CharmmParameterSet('/home/simone/opt/ff/charmmff_jul18.prm')
     system = psf.createSystem(
                 params,
-                nonbondedMethod = CutoffNonPeriodic,
-                nonbondedCutoff = 18*angstrom,
+                nonbondedMethod = omm.CutoffNonPeriodic,
+                nonbondedCutoff = 18*unit.angstrom,
                 constraints     = None,
                 rigidWater      = True,
-                hydrogenMass    = 1*amu,
+                hydrogenMass    = 1*unit.amu,
                 implicitSolvent = solvent,
                 soluteDielectric= 1.0,
                 solventDielectric= 80.0
             )
-    integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 2*femtosecond)
-    platform = Platform.getPlatformByName('CUDA')
+    integrator = omm.LangevinIntegrator(300*unit.kelvin, 1/unit.picosecond, 2*unit.femtosecond)
+    platform = omm.Platform.getPlatformByName('CUDA')
     properties = {'CudaPrecision': "double" , "CudaDeviceIndex" : "0"}
-    simulation = Simulation(psf.topology, system, integrator, platform, properties)
+    simulation = omm.Simulation(psf.topology, system, integrator, platform, properties)
     simulation.context.setPositions(pdb.positions)
     simulation.minimizeEnergy(maxIterations=100)
-    ener = simulation.context.getState(getEnergy=True).getPotentialEnergy().value_in_unit(kilocalorie_per_mole)
+    ener = simulation.context.getState(getEnergy=True).getPotentialEnergy().value_in_unit(unit.kilocalorie_per_mole)
     return ener
 
 def get_omm_binding(wrkdir, solvent):
@@ -57,23 +60,24 @@ def omm_vacuum(wrkdir):
     return get_omm_binding(wrkdir, None)
 
 def omm_hct(wrkdir):
-    return get_omm_binding(wrkdir, HCT)
+    return get_omm_binding(wrkdir, 'HCT')
 
 def omm_obc1(wrkdir):
-    return get_omm_binding(wrkdir, OBC1)
+    return get_omm_binding(wrkdir, 'OBC1')
 
 def omm_obc2(wrkdir):
-    return get_omm_binding(wrkdir, OBC2)
+    return get_omm_binding(wrkdir, 'OBC2')
 
 def omm_gbn(wrkdir):
-    return get_omm_binding(wrkdir, GBn)
+    return get_omm_binding(wrkdir, 'GBn')
 
 def omm_gbn2(wrkdir):
-    return get_omm_binding(wrkdir, GBn2)
+    return get_omm_binding(wrkdir, 'GBn2')
 
 
 if __name__=='__main__':
-    ppdg.readconfig('config-ppdg.ini')
+    import ppdg
+    ppdg.config.cread('config-ppdg.ini')
     print(get_omm_binding(sys.argv[1], None))
     print(get_omm_binding(sys.argv[1], HCT))
     print(get_omm_binding(sys.argv[1], OBC1))

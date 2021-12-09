@@ -2,26 +2,32 @@
 
 import os, sys
 from timeit import default_timer as timer
-import modeller
-import ppdg
 import logging
 log = logging.getLogger(__name__)
 
-class AGBNPScorer(modeller.terms.AssessEnergyTerm):
-    """Score the model using GB/SA implicit solvation."""
-    name = 'AGBNP Implicit Solvent'
+try:
+    import modeller
+    HAVE_MODELLER = True
+except ImportError:
+    HAVE_MODELLER = False
 
-    def __init__(self, library='${LIB}/solv.lib', solvation_model=1,
+
+if HAVE_MODELLER:
+    class AGBNPScorer(modeller.terms.AssessEnergyTerm):
+        """Score the model using GB/SA implicit solvation."""
+        name = 'AGBNP Implicit Solvent'
+
+        def __init__(self, library='${LIB}/solv.lib', solvation_model=1,
                  cutoff=12.0, group=modeller.physical.gbsa):
-        modeller.terms.energy_term.__init__(self)
-        self.__library = library
-        self.__solvation_model = solvation_model
-        self.__cutoff = cutoff
-        self._group = group
+            modeller.terms.energy_term.__init__(self)
+            self.__library = library
+            self.__solvation_model = solvation_model
+            self.__cutoff = cutoff
+            self._group = group
 
-    def _add_term(self, edat, indx):
-        import _modeller
-        _modeller.mod_gbsa_create(edat, indx, self._group.get_type(),
+        def _add_term(self, edat, indx):
+            import _modeller
+            _modeller.mod_gbsa_create(edat, indx, self._group.get_type(),
                                   self.__library, self.__solvation_model,
                                   self.__cutoff)
 
@@ -34,6 +40,7 @@ def agbnp(wrkdir):
             modeling", Journal of Computational Chemistry, vol. 25, no. 4, 
             pp. 479-499, 2004.
     """
+    import modeller
     time_start = timer()
     log.info("Getting AGBNP scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')

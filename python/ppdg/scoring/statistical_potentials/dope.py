@@ -2,7 +2,6 @@
 
 import os, sys
 from timeit import default_timer as timer
-import modeller
 import ppdg
 import logging
 log = logging.getLogger(__name__)
@@ -15,6 +14,7 @@ def dope(wrkdir):
             prediction of protein structures", Protein Science, vol. 15, 
             no. 11, pp. 2507-2524, 2006.
     """
+    import modeller
     time_start = timer()
     log.info("Getting DOPE and DOPE-HR scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')
