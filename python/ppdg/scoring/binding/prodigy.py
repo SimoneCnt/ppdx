@@ -10,6 +10,7 @@ def prodigy_IC_NIS(wrkdir, cpxname='complexAB.pdb', recname='receptor.pdb', lign
     """
         Calculates the predicted binding affinity value
         based on the IC-NIS model.
+        https://github.com/haddocking/binding_affinity
     """
     log.info('Getting Prodigy_IC_NIS')
     desc_set = set(desc.keys())
