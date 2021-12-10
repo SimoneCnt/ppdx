@@ -1,0 +1,2 @@
+#Name                                    RecN LigN               dGexp         Template
+BNASE__BSTAR                                1    1                 0.0     1brs-cleaned.pdb
