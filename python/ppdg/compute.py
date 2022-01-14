@@ -5,6 +5,9 @@ import joblib
 import numpy as np
 import ppdg
 
+import parsl
+from parsl import python_app
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -110,6 +113,8 @@ def _run(inputs, config):
         config = 'pool'
     if config=='serial':
         return _run_serial(inputs)
+    elif config=='parsl':
+        return _run_parsl(inputs)
     elif config.startswith('pool'):
         splt = config.split(':')
         if len(splt)==1:
@@ -148,6 +153,28 @@ def _run_pool(inputs, ncores):
         key2, scores = res
         assert (key==key2), "Something very wrong happened :("
         _save(name, protocol, nmodel, scores)
+
+
+def _run_parsl(inputs):
+    ppdg_config = ppdg.config.cget()
+    futures = dict()
+    for i,data in enumerate(inputs):
+        name, protocol, _, _, _, _, nmodel, _ = data
+        key = '%s__%s__%s' % (name, protocol, str(nmodel))
+        futures[key] = _compute_parsl(data, ppdg_config)
+        log.info("Task %d key %s submitted" % (i, key))
+    for data in inputs:
+        name, protocol, _, _, _, _, nmodel, _ = data
+        key = '%s__%s__%s' % (name, protocol, str(nmodel))
+        key2, scores = futures[key].result()
+        assert (key==key2), "Something very wrong happened :("
+        _save(name, protocol, nmodel, scores)
+
+@python_app
+def _compute_parsl(data, ppdg_config):
+    import ppdg
+    ppdg.config.cset(ppdg_config)
+    return ppdg.compute_core(*data)
 
 
 def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmodel, force_calc):
