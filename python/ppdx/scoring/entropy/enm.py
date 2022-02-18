@@ -2,7 +2,7 @@
 
 import os
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 from math import sqrt, exp
 import numpy as np
 import logging
@@ -46,7 +46,7 @@ def enm_entropy(fname, K=50.0, cutoff=7.0, spring='constant'):
         build its hessian matrix, diagonalize it, and return its entropy.
     """
 
-    pdb_all = ppdg.Pdb(fname)
+    pdb_all = ppdx.Pdb(fname)
     pdb_all.remove_hydrogens()
     pdb = [ [atom.x, atom.y, atom.z] for atom in pdb_all.atoms if (atom.name=='CB' or (atom.name=='CA' and atom.resname=='GLY')) ]
 

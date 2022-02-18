@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os, shutil
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def charmify(fname, nsteps=100):
 
     os.chdir(wrkdir)
 
-    pdb = ppdg.Pdb(name)
+    pdb = ppdx.Pdb(name)
     pdb.fix4charmm()
     pdb.chain2segid()
     pdb.set_occupancy(1.0)
@@ -28,7 +28,7 @@ def charmify(fname, nsteps=100):
 
     chains = pdb.split_by_chain()
     nchains = len(chains)
-    cmd = ppdg.CHARMM
+    cmd = ppdx.CHARMM
     cmd += ' nc=%d ' % nchains
     i=1
     for ch, pdb in chains.items():
@@ -37,13 +37,13 @@ def charmify(fname, nsteps=100):
         i += 1
     cmd += 'name=chain_ out=%s ' % (basename)
     cmd += 'nsteps=%d ' % (nsteps)
-    cmd += 'ffpath=%s ' % (ppdg.FFPATH)
+    cmd += 'ffpath=%s ' % (ppdx.FFPATH)
     cmd += '-i buildgen.inp >%s 2>&1' % (basename+'.out')
 
-    ppdg.link_data('buildgen.inp')
-    ppdg.link_data('disu.str')
+    ppdx.link_data('buildgen.inp')
+    ppdx.link_data('disu.str')
 
-    ret = ppdg.tools.execute(cmd)
+    ret = ppdx.tools.execute(cmd)
     os.chdir(basepath)
     if ret!=0:
         raise ValueError("Charmm failed while running < %s > in %s" % (cmd, wrkdir))

@@ -2,14 +2,14 @@
 
 import os
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
 def run_gb(fname, mode):
     outfile = '%s-%s.out' % (fname, mode)
-    cmd = "%s sysname=%s domini=0 ffpath=%s -i %s.inp >%s 2>&1" % (ppdg.CHARMM, fname, ppdg.FFPATH, mode, outfile)
-    ret = ppdg.tools.execute(cmd)
+    cmd = "%s sysname=%s domini=0 ffpath=%s -i %s.inp >%s 2>&1" % (ppdx.CHARMM, fname, ppdx.FFPATH, mode, outfile)
+    ret = ppdx.tools.execute(cmd)
     if ret!=0:
         raise ValueError("Charmm failed while running < %s >." % (cmd))
     if mode in ['gbsw', 'gbmv']:
@@ -50,11 +50,11 @@ def charmm_gen(wrkdir, lmode):
     basepath = os.getcwd()
     os.chdir(wrkdir)
     log.info("Getting %s scoring..." % (umode))
-    ppdg.link_data(lmode+'.inp')
+    ppdx.link_data(lmode+'.inp')
 
     # Minimize complex
-    cmd = "%s sysname=complex-chm domini=1 ffpath=%s -i %s.inp >%s_mini.out 2>&1" % (ppdg.CHARMM, ppdg.FFPATH, lmode, lmode)
-    ret = ppdg.tools.execute(cmd)
+    cmd = "%s sysname=complex-chm domini=1 ffpath=%s -i %s.inp >%s_mini.out 2>&1" % (ppdx.CHARMM, ppdx.FFPATH, lmode, lmode)
+    ret = ppdx.tools.execute(cmd)
     if ret!=0:
         raise ValueError("Charmm failed while running < %s > in %s" % (cmd, wrkdir))
     os.remove('complex-chm-%s.psf' % (lmode))
@@ -71,13 +71,13 @@ def charmm_gen(wrkdir, lmode):
             receptor = ' .or. '.join(['segid %s' % (c) for c in crec]),
             ligand = ' .or. '.join(['segid %s' % (c) for c in clig])
         )
-    ppdg.link_data('extract.inp')
+    ppdx.link_data('extract.inp')
 
     # Minimize the receptor and the ligand
     for sysname in ['receptor', 'ligand']:
         cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % \
-            (ppdg.CHARMM, 'complex-chm-'+lmode, sele[sysname], sysname+'-chm-'+lmode, ppdg.FFPATH, sysname+'-chm-'+lmode+'.out')
-        ret = ppdg.tools.execute(cmd)
+            (ppdx.CHARMM, 'complex-chm-'+lmode, sele[sysname], sysname+'-chm-'+lmode, ppdx.FFPATH, sysname+'-chm-'+lmode+'.out')
+        ret = ppdx.tools.execute(cmd)
         if ret!=0:
             raise ValueError("Charmm failed while running < %s > in %s" % (cmd, wrkdir))
         os.remove('%s-chm-%s.psf' % (sysname, lmode))

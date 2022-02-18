@@ -3,7 +3,7 @@
 import os, json
 import joblib
 import numpy as np
-import ppdg
+import ppdx
 
 import parsl
 from parsl import python_app
@@ -43,9 +43,9 @@ def get_descriptors(name, protocol, desc_list=None, nmodels=None, median=False):
         All descriptors have to be already computed by get_descriptors,
         otherwise an error is thrown.
     """
-    wrkdir = os.path.join(ppdg.WRKDIR, name)
+    wrkdir = os.path.join(ppdx.WRKDIR, name)
     if not desc_list:
-        desc_list = ppdg.scoring.all_descriptors()
+        desc_list = ppdx.scoring.all_descriptors()
     descfile = os.path.join(wrkdir, 'descriptors.json')
     if not os.path.isfile(descfile):
         raise ValueError("Missing file descriptors.json in directory %s\nBe sure to have called get_descriptors before!" % (wrkdir))
@@ -137,7 +137,7 @@ def _run_serial(inputs):
     for data in inputs:
         name, protocol, _, _, _, _, nmodel, _ = data
         key = '%s__%s__%s' % (name, protocol, str(nmodel))
-        key2, scores = ppdg.compute_core(*data)
+        key2, scores = ppdx.compute_core(*data)
         assert (key==key2), "Something very wrong happened :("
         _save(name, protocol, nmodel, scores)
 
@@ -146,7 +146,7 @@ def _run_pool(inputs, ncores):
     from  multiprocessing import Pool
     results = dict()
     with Pool(ncores) as p:
-        results = p.starmap(ppdg.compute_core, inputs)
+        results = p.starmap(ppdx.compute_core, inputs)
     for data, res in zip(inputs, results):
         name, protocol, _, _, _, _, nmodel, _ = data
         key = '%s__%s__%s' % (name, protocol, str(nmodel))
@@ -156,12 +156,12 @@ def _run_pool(inputs, ncores):
 
 
 def _run_parsl(inputs):
-    ppdg_config = ppdg.config.cget()
+    ppdx_config = ppdx.config.cget()
     futures = dict()
     for i,data in enumerate(inputs):
         name, protocol, _, _, _, _, nmodel, _ = data
         key = '%s__%s__%s' % (name, protocol, str(nmodel))
-        futures[key] = _compute_parsl(data, ppdg_config)
+        futures[key] = _compute_parsl(data, ppdx_config)
         log.info("Task %d key %s submitted" % (i, key))
     for data in inputs:
         name, protocol, _, _, _, _, nmodel, _ = data
@@ -171,15 +171,15 @@ def _run_parsl(inputs):
         _save(name, protocol, nmodel, scores)
 
 @python_app
-def _compute_parsl(data, ppdg_config):
-    import ppdg
-    ppdg.config.cset(ppdg_config)
-    return ppdg.compute_core(*data)
+def _compute_parsl(data, ppdx_config):
+    import ppdx
+    ppdx.config.cset(ppdx_config)
+    return ppdx.compute_core(*data)
 
 
 def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmodel, force_calc):
 
-    base_wrkdir = os.path.join(ppdg.WRKDIR, name)
+    base_wrkdir = os.path.join(ppdx.WRKDIR, name)
     key = '%s__%s__%s' % (name, protocol, str(nmodel))
 
     # Read the descriptors from file
@@ -192,7 +192,7 @@ def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmode
             alldesc = json.load(fp)
         if protocol in alldesc:
             desc = alldesc[protocol]
-    desc_flat = ppdg.tools.switch_desc_format(desc)
+    desc_flat = ppdx.tools.switch_desc_format(desc)
 
     # Make a list of what we need to compute
     if str(nmodel) in desc_flat.keys():
@@ -216,7 +216,7 @@ def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmode
         log.info('Un-compressing %s.tgz' % (wrkdir))
         basepath = os.getcwd()
         os.chdir(base_wrkdir)
-        ppdg.tools.execute('tar -xf %s_%s.tgz && rm %s_%s.tgz' % (protocol, str(nmodel), protocol, str(nmodel)))
+        ppdx.tools.execute('tar -xf %s_%s.tgz && rm %s_%s.tgz' % (protocol, str(nmodel), protocol, str(nmodel)))
         os.chdir(basepath)
 
     # Check template file exists
@@ -235,7 +235,7 @@ def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmode
                 % (nchains_rec, nchains_lig, nchains_tot))
 
     # Compute
-    scores = ppdg.makemodel.make_model(wrkdir, protocol, template, sequence)
+    scores = ppdx.makemodel.make_model(wrkdir, protocol, template, sequence)
     nchfile = os.path.join(wrkdir, 'nchains.dat')
     if not os.path.isfile(nchfile):
         with open(nchfile,'w') as fp:
@@ -244,9 +244,9 @@ def compute_core(name, protocol, template, sequence, nchains, desc_wanted, nmode
         nsteps = 10
     else:
         nsteps = 100
-    ppdg.makemodel.charmify(os.path.join(wrkdir, 'model.pdb'), nsteps=nsteps)
-    ppdg.makemodel.split_complex(wrkdir, nchains)
-    scores2 = ppdg.scoring.evaluate(wrkdir, desc_wanted, desc_have, force_calc)
+    ppdx.makemodel.charmify(os.path.join(wrkdir, 'model.pdb'), nsteps=nsteps)
+    ppdx.makemodel.split_complex(wrkdir, nchains)
+    scores2 = ppdx.scoring.evaluate(wrkdir, desc_wanted, desc_have, force_calc)
     scores.update(scores2)
     return key, scores
 
@@ -256,7 +256,7 @@ def _save(name, protocol, nmodel, scores):
     if not scores:
         return
 
-    base_wrkdir = os.path.join(ppdg.WRKDIR, name)
+    base_wrkdir = os.path.join(ppdx.WRKDIR, name)
 
     # Read the descriptors from file
     alldesc = dict()
@@ -267,11 +267,11 @@ def _save(name, protocol, nmodel, scores):
             alldesc = json.load(fp)
         if protocol in alldesc:
             desc = alldesc[protocol]
-    desc_flat = ppdg.tools.switch_desc_format(desc)
+    desc_flat = ppdx.tools.switch_desc_format(desc)
     desc_flat[str(nmodel)] = scores
 
     # Write descriptors to file
-    desc2 = ppdg.tools.switch_desc_format(desc_flat)
+    desc2 = ppdx.tools.switch_desc_format(desc_flat)
     if desc2!=desc:
         alldesc[protocol] = desc2
         with open(descfile, 'w') as fp:
@@ -282,10 +282,10 @@ def _save(name, protocol, nmodel, scores):
 def clean(wrkdir=None):
     # List of files generated during model construction and evaluation of the descriptors.
     # Commented file names should be kept, uncommented ones can be deleted without problems.
-    # wrkdir is the same as ppdg.WRKDIR
+    # wrkdir is the same as ppdx.WRKDIR
 
     if not wrkdir:
-        wrkdir = ppdg.WRKDIR
+        wrkdir = ppdx.WRKDIR
 
     log.info('Cleaning directory %s' % (wrkdir))
 
@@ -329,6 +329,6 @@ def clean(wrkdir=None):
                 if os.path.isfile(torm):
                     os.remove(torm)
             #log.info('Compressing dir %s/%s' % (sysname, model))
-            ppdg.tools.execute('tar --remove-files -czf %s.tgz %s' % (model, model))
+            ppdx.tools.execute('tar --remove-files -czf %s.tgz %s' % (model, model))
         os.chdir(basepath)
 

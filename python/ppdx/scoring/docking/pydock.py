@@ -3,7 +3,7 @@
 import os, sys
 import numpy as np
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -19,10 +19,10 @@ def pydock(wrkdir):
     log.info("Getting pyDock scoring...")
     basepath = os.getcwd()
     os.chdir(wrkdir)
-    rec = ppdg.Pdb('receptor.pdb')
+    rec = ppdx.Pdb('receptor.pdb')
     rec.set_chain('A')
     rec.write('receptorA.pdb')
-    lig = ppdg.Pdb('ligand.pdb')
+    lig = ppdx.Pdb('ligand.pdb')
     lig.set_chain('B')
     lig.write('ligandB.pdb')
     xavg = np.mean([ atom.x for atom in lig.atoms])
@@ -38,13 +38,13 @@ def pydock(wrkdir):
         fp.write("pdb     = ligandB.pdb\n")
         fp.write("mol     = %s\n" % ('B'))
         fp.write("newmol  = %s\n" % ('B'))
-    ret = ppdg.tools.execute("%s pydock setup >pydock_setup.out 2>&1" % (os.path.join(ppdg.PYDOCK, 'pyDock3')))
+    ret = ppdx.tools.execute("%s pydock setup >pydock_setup.out 2>&1" % (os.path.join(ppdx.PYDOCK, 'pyDock3')))
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("pyDock setup failed!")
     with open("pydock.rot", 'w') as fp:
         fp.write("1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 %f %f %f 1\n" % (xavg, yavg, zavg))
-    ret = ppdg.tools.execute("%s pydock dockser >pydock_dockser.out 2>&1" % (os.path.join(ppdg.PYDOCK, 'pyDock3')))
+    ret = ppdx.tools.execute("%s pydock dockser >pydock_dockser.out 2>&1" % (os.path.join(ppdx.PYDOCK, 'pyDock3')))
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("pyDock dockser failed!")
@@ -58,6 +58,6 @@ def pydock(wrkdir):
     return desc
 
 if __name__=='__main__':
-    ppdg.readconfig('config-ppdg.ini')
+    ppdx.readconfig('config-ppdx.ini')
     print(pydock(sys.argv[1]))
 

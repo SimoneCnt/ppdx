@@ -75,13 +75,3 @@ def omm_gbn2(wrkdir):
     return get_omm_binding(wrkdir, 'GBn2')
 
 
-if __name__=='__main__':
-    import ppdg
-    ppdg.config.cread('config-ppdg.ini')
-    print(get_omm_binding(sys.argv[1], None))
-    print(get_omm_binding(sys.argv[1], HCT))
-    print(get_omm_binding(sys.argv[1], OBC1))
-    print(get_omm_binding(sys.argv[1], OBC2))
-    print(get_omm_binding(sys.argv[1], GBn))
-    print(get_omm_binding(sys.argv[1], GBn2))
-

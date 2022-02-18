@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, ppdg
+import os
 import urllib.request
 import logging
 log = logging.getLogger(__name__)
@@ -141,21 +141,7 @@ class Pdb():
         return newpdb
 
     def read(self, fname):
-        if fname.startswith('PDB:') and len(fname)==8:
-            path = os.path.join(ppdg.PDBDIR, fname[-4:].lower()+'.pdb')
-            if os.path.isfile(path):
-                self.read(path)
-                return
-            url = 'https://files.rcsb.org/download/'+fname[-4:]+'.pdb'
-            log.info('Downloading %s' % (fname[-4:]))
-            response = urllib.request.urlopen(url)
-            with open(path, 'w') as fp:
-                for line in response.readlines():
-                    line = line.decode('utf-8')
-                    fp.write(line)
-                    if line.startswith("ATOM") or line.startswith("HETATM"):
-                        self.atoms.append(Atom(pdbstring=line))
-        elif fname[-3:]=='pdb':
+        if fname[-3:]=='pdb':
             with open(fname, 'r') as fp:
                 for line in fp.readlines():
                     if line.startswith("ATOM") or line.startswith("HETATM"):

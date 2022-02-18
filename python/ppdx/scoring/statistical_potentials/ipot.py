@@ -2,7 +2,7 @@
 
 import os
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def ipot_core(wrkdir, pote):
     basepath = os.getcwd()
     os.chdir(wrkdir)
     outfile = 'ipot_%s.out' % (pote)
-    ret = ppdg.tools.execute("%s -r receptor.pdb -l ligand.pdb >%s 2>&1" % (os.path.join(ppdg.IPOT, pote), outfile))
+    ret = ppdx.tools.execute("%s -r receptor.pdb -l ligand.pdb >%s 2>&1" % (os.path.join(ppdx.IPOT, pote), outfile))
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("iPot with potential %s failed!" % (pote))

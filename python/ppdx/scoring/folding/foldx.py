@@ -1,7 +1,7 @@
 
 import os
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -21,13 +21,13 @@ def foldx(wrkdir, cpxname='complexAB.pdb'):
     os.chdir(wrkdir)
     log.info("Getting FoldX scoring...")
     if not os.path.isfile("rotabase.txt"):
-        if os.path.isfile(os.path.join(ppdg.FOLDX, 'rotabase.txt')):
-            os.symlink(os.path.join(ppdg.FOLDX, 'rotabase.txt'), 'rotabase.txt')
+        if os.path.isfile(os.path.join(ppdx.FOLDX, 'rotabase.txt')):
+            os.symlink(os.path.join(ppdx.FOLDX, 'rotabase.txt'), 'rotabase.txt')
         else:
-            raise ValueError('Impossible to find file rotabase.txt in directory %s. Fix FOLDX variable in config.' % (ppdg.FOLDX))
-    ret = ppdg.tools.execute(os.path.join(ppdg.FOLDX,'foldx') + " --command=RepairPDB --pdb=%s" % (cpxname) + " >foldx_repair.err 2>&1")
+            raise ValueError('Impossible to find file rotabase.txt in directory %s. Fix FOLDX variable in config.' % (ppdx.FOLDX))
+    ret = ppdx.tools.execute(os.path.join(ppdx.FOLDX,'foldx') + " --command=RepairPDB --pdb=%s" % (cpxname) + " >foldx_repair.err 2>&1")
     repairname = cpxname[:-4]+'_Repair.pdb'
-    ret = ppdg.tools.execute(os.path.join(ppdg.FOLDX,'foldx') + " --command=AnalyseComplex --pdb=%s --analyseComplexChains=A,B --output-file=foldx" % (repairname) + " >foldx_analyse.err 2>&1")
+    ret = ppdx.tools.execute(os.path.join(ppdx.FOLDX,'foldx') + " --command=AnalyseComplex --pdb=%s --analyseComplexChains=A,B --output-file=foldx" % (repairname) + " >foldx_analyse.err 2>&1")
     desc = dict()
     with open('Interaction_foldx_AC.fxout','r') as fp:
         for line in fp.readlines():
@@ -49,7 +49,7 @@ def foldx(wrkdir, cpxname='complexAB.pdb'):
      
 if __name__=='__main__':
     import sys, os
-    ppdg.readconfig('ppdg.ini')
+    ppdx.readconfig('ppdx.ini')
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     if len(sys.argv)==2:
         desc = foldx(sys.argv[1])

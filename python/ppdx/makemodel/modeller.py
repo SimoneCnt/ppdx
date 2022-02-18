@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import ppdg
+import ppdx
 from timeit import default_timer as timer
 import os, sys, random
 import logging
@@ -40,7 +40,7 @@ def modeller_generic(sequence, template, wrkdir, fast):
         fp.write("*\n")
     # Prepare template
     if not os.path.isfile('template.pdb'):
-        if isinstance(template, ppdg.Pdb):
+        if isinstance(template, ppdx.Pdb):
             template.write('template.pdb')
         else:
             template_path = os.path.join(basepath, template)

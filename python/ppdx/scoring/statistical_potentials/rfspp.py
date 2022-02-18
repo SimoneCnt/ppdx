@@ -2,7 +2,7 @@
 
 import os
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -17,9 +17,9 @@ def rfspp_core_core(pdb, pote):
             assessment of protein models and a survey of energy functions", 
             BMC Bioinformatics, vol. 11, p. 128, 2010.
     """
-    rfspp = os.path.join(ppdg.RFSPP, "calc_energy")
+    rfspp = os.path.join(ppdx.RFSPP, "calc_energy")
     outfile = 'rfspp_%s.out' % (pote)
-    ret = ppdg.tools.execute("%s %s %s >%s 2>&1" % (rfspp, pdb, os.path.join(ppdg.RFSPP, pote), outfile))
+    ret = ppdx.tools.execute("%s %s %s >%s 2>&1" % (rfspp, pdb, os.path.join(ppdx.RFSPP, pote), outfile))
     if ret!=0:
         raise ValueError("calc_energy with potential %s failed!" % (pote))
     with open(outfile) as fp:

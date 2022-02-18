@@ -4,7 +4,7 @@ import os
 from .modeller import modeller_veryfast, modeller_fast, modeller_slow
 from .rosetta import rosetta1
 #from .charmify import charmm_model
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ def split_complex(wrkdir, nchains):
         or not os.path.isfile('ligandB.pdb') or not os.path.isfile('receptorA.pdb') or not os.path.isfile('complexAB.pdb'):
 
         log.info('Splitting model-chm.psf in ligand, receptor and complex.')
-        cpx = ppdg.Pdb(os.path.join(wrkdir, 'model-chm.pdb'))
+        cpx = ppdx.Pdb(os.path.join(wrkdir, 'model-chm.pdb'))
         cpx.segid2chain()
         nchains_tot = len(cpx.split_by_chain())
         lrec = nchains[0]
@@ -59,15 +59,15 @@ def split_complex(wrkdir, nchains):
         clig = alphabet[lrec:nchains_tot]
         sele_rec = ' .or. '.join(['segid %s' % (c) for c in crec])
         sele_lig = ' .or. '.join(['segid %s' % (c) for c in clig])
-        ppdg.link_data('extract.inp')
+        ppdx.link_data('extract.inp')
 
-        cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % (ppdg.CHARMM, 'model-chm', sele_rec, 'receptor-chm', ppdg.FFPATH, 'receptor-chm.out')
-        ret = ppdg.tools.execute(cmd)
+        cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % (ppdx.CHARMM, 'model-chm', sele_rec, 'receptor-chm', ppdx.FFPATH, 'receptor-chm.out')
+        ret = ppdx.tools.execute(cmd)
         if ret!=0:
             raise ValueError("Charmm failed.")
 
-        cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % (ppdg.CHARMM, 'model-chm', sele_lig, 'ligand-chm', ppdg.FFPATH, 'ligand-chm.out')
-        ret = ppdg.tools.execute(cmd)
+        cmd = '%s basename=%s sel="%s" outname=%s ffpath=%s -i extract.inp >%s 2>&1' % (ppdx.CHARMM, 'model-chm', sele_lig, 'ligand-chm', ppdx.FFPATH, 'ligand-chm.out')
+        ret = ppdx.tools.execute(cmd)
         if ret!=0:
             raise ValueError("Charmm failed.")
 
@@ -75,8 +75,8 @@ def split_complex(wrkdir, nchains):
             if not os.path.isfile('complex-chm.'+f):
                 os.symlink('model-chm.'+f, 'complex-chm.'+f)
 
-        rec = ppdg.Pdb('receptor-chm.pdb')
-        lig = ppdg.Pdb('ligand-chm.pdb')
+        rec = ppdx.Pdb('receptor-chm.pdb')
+        lig = ppdx.Pdb('ligand-chm.pdb')
         rec.make_standard()
         lig.make_standard()
         cpx = rec+lig

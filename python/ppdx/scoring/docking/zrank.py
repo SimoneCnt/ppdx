@@ -2,7 +2,7 @@
 
 import os
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def zrank(wrkdir):
     os.chdir(wrkdir)
     with open("zrank", 'w') as fp:
         fp.write('complexAB.pdb')
-    ret = ppdg.tools.execute("%s zrank >zrank.err 2>&1" % (os.path.join(ppdg.ZRANK, 'zrank')))
+    ret = ppdx.tools.execute("%s zrank >zrank.err 2>&1" % (os.path.join(ppdx.ZRANK, 'zrank')))
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("ZRANK failed!")
@@ -42,7 +42,7 @@ def zrank2(wrkdir):
     os.chdir(wrkdir)
     with open("zrank2", 'w') as fp:
         fp.write('complexAB.pdb')
-    ret = ppdg.tools.execute("%s -R zrank2 >zrank2.err 2>&1" % (os.path.join(ppdg.ZRANK, 'zrank')))
+    ret = ppdx.tools.execute("%s -R zrank2 >zrank2.err 2>&1" % (os.path.join(ppdx.ZRANK, 'zrank')))
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("ZRANK failed!")

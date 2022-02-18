@@ -3,16 +3,15 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = 'ppdg',
-    version = '0.2',
-    description = 'Build protein-protein complexes and calculate binding affinity',
-    long_description = 'Build protein-protein complexes and calculate binding affinity',
-    url = 'https://github.com/SimoneCnt/ppdg',
+    name = 'ppdx',
+    version = '1.0',
+    description = 'Build protein-protein complexes and compute binding descriptors',
+    long_description = 'Build protein-protein complexes and compute binding descriptors',
+    url = 'https://github.com/SimoneCnt/ppdx',
     author = 'Simone Conti',
     author_email = 'simonecnt@gmail.com',
-    license = 'All rights reserved',
+    license = 'GPLv3',
     packages = find_packages(),
     package_data = {'ppdg': ['data/*']},
-    #install_requires=[],
 )
 

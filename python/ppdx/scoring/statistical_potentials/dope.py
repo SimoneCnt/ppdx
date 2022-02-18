@@ -2,7 +2,6 @@
 
 import os, sys
 from timeit import default_timer as timer
-import ppdg
 import logging
 log = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ from timeit import default_timer as timer
 import Bio.PDB
 import logging
 log = logging.getLogger(__name__)
-from ppdg.scoring.molecular import sasa_all, intermolecular_contacts
+from ppdx.scoring.molecular import sasa_all, intermolecular_contacts
 
 def prodigy_IC_NIS(wrkdir, cpxname='complexAB.pdb', recname='receptor.pdb', ligname='ligand.pdb', desc=dict()):
     """

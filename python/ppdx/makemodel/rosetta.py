@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import ppdg
+import ppdx
 from timeit import default_timer as timer
 import os, sys, random
 import Bio.pairwise2
@@ -31,7 +31,7 @@ def rosetta1(target_sequence, template, wrkdir):
 
     # Prepare template
     if not os.path.isfile('PDBID.pdb'):
-        if isinstance(template, ppdg.Pdb):
+        if isinstance(template, ppdx.Pdb):
             template.write('PDBID.pdb')
         else:
             template_path = os.path.join(basepath, template)
@@ -42,7 +42,7 @@ def rosetta1(target_sequence, template, wrkdir):
 
     # Remove / because Bio do not recognize them and rosetta thread neither...
     target_sequence = target_sequence.replace('/','')
-    template_sequence = ppdg.Pdb("PDBID.pdb").get_sequence().replace('/','')
+    template_sequence = ppdx.Pdb("PDBID.pdb").get_sequence().replace('/','')
 
     # Make alignment
     alignment = Bio.pairwise2.align.globalds(target_sequence, template_sequence, Bio.SubsMat.MatrixInfo.blosum62, -10, -0.5)
@@ -59,21 +59,21 @@ def rosetta1(target_sequence, template, wrkdir):
         fp.write("--\n")
 
     log.info('Running rosetta thread...')
-    rthread = ppdg.ROSETTABIN+"/partial_thread.static.linuxgccrelease " + \
-                " -database " + ppdg.ROSETTA + "/main/database" + \
+    rthread = ppdx.ROSETTABIN+"/partial_thread.static.linuxgccrelease " + \
+                " -database " + ppdx.ROSETTA + "/main/database" + \
                 " -in:file:fasta " + target_sequence_file + \
                 " -in:file:alignment alignment.gri" + \
                 " -in:file:template_pdb PDBID.pdb" + \
                 " -ignore_unrecognized_res " + \
                 " >rosetta_thread.out 2>&1 "
-    ppdg.tools.execute(rthread);
+    ppdx.tools.execute(rthread);
     if not os.path.isfile('PDBID_thread.pdb'):
         log.error('Rosetta thread failed! Look at the output file rosetta_thread.out')
 
     log.info("Running Rosetta script...")
-    ppdg.link_data('hybridize.xml')
-    rscript = ppdg.ROSETTABIN + "/rosetta_scripts.static.linuxgccrelease " + \
-                " -database " + ppdg.ROSETTA + "/main/database " + \
+    ppdx.link_data('hybridize.xml')
+    rscript = ppdx.ROSETTABIN + "/rosetta_scripts.static.linuxgccrelease " + \
+                " -database " + ppdx.ROSETTA + "/main/database " + \
                 " -in:file:fasta " + target_sequence_file + \
                 " -parser:protocol hybridize.xml " + \
                 " -default_max_cycles 200 " + \
@@ -81,7 +81,7 @@ def rosetta1(target_sequence, template, wrkdir):
                 " -restore_talaris_behavior " + \
                 " -score:set_weights pro_close 0 " + \
                 " >rosetta_script.out 2>&1 "
-    ppdg.tools.execute(rscript);
+    ppdx.tools.execute(rscript);
     if not os.path.isfile('S_0001.pdb'):
         log.error('Rosetta hybridize failed! Look at the output file rosetta_script.out')
 

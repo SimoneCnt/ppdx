@@ -3,7 +3,7 @@
 
 import sys, os
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -20,13 +20,13 @@ def rosetta(wrkdir):
     with open('rosetta_relax', 'w') as fp:
         fp.write("ramp_repack_min 1 0.1 0.0\n")
         fp.write("accept_to_best\n")
-    ret = ppdg.tools.execute(ppdg.ROSETTABIN+"/relax.static.linuxgccrelease -s complexAB.pdb -relax:script rosetta_relax -default_max_cycles 200 -overwrite >rosetta_relax.out 2>&1")
+    ret = ppdx.tools.execute(ppdx.ROSETTABIN+"/relax.static.linuxgccrelease -s complexAB.pdb -relax:script rosetta_relax -default_max_cycles 200 -overwrite >rosetta_relax.out 2>&1")
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("Rosetta relax failed in %s" % (wrkdir))
 
     # Score
-    ret = ppdg.tools.execute(ppdg.ROSETTABIN+"/InterfaceAnalyzer.static.linuxgccrelease -s complexAB_0001.pdb -interface A_B -pack_input true -overwrite -out:file:score_only rosetta_score_interface.sc >rosetta_score.out 2>&1")
+    ret = ppdx.tools.execute(ppdx.ROSETTABIN+"/InterfaceAnalyzer.static.linuxgccrelease -s complexAB_0001.pdb -interface A_B -pack_input true -overwrite -out:file:score_only rosetta_score_interface.sc >rosetta_score.out 2>&1")
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("Rosetta score failed in %s" % (wrkdir))
@@ -45,7 +45,7 @@ def rosetta(wrkdir):
     return desc
      
 if __name__=='__main__':
-    ppdg.readconfig('config-ppdg.ini')
+    ppdx.readconfig('config-ppdx.ini')
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     print(rosetta(sys.argv[1]))
 

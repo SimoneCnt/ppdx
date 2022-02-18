@@ -3,7 +3,7 @@
 import os, sys
 import numpy as np
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -17,20 +17,20 @@ def firedock(wrkdir):
     os.chdir(wrkdir)
 
     # Remove hydrogens
-    pdb = ppdg.Pdb('ligand.pdb')
+    pdb = ppdx.Pdb('ligand.pdb')
     pdb.remove_hydrogens()
     pdb.write('ligand_firedock_noh.pdb')
-    pdb = ppdg.Pdb('receptor.pdb')
+    pdb = ppdx.Pdb('receptor.pdb')
     pdb.remove_hydrogens()
     pdb.write('receptor_firedock_noh.pdb')
 
     # Reduce
-    fd_reduce = "%s/PDBPreliminaries/reduce.2.21.030604 -DB %s/PDBPreliminaries/reduce_het_dict.txt -OH -HIS -NOADJust -NOROTMET" % (ppdg.FIREDOCK, ppdg.FIREDOCK)
-    ret = ppdg.tools.execute(fd_reduce+' receptor_firedock_noh.pdb >firedock_receptor.pdb 2>firedock_reduce_receptor.out')
+    fd_reduce = "%s/PDBPreliminaries/reduce.2.21.030604 -DB %s/PDBPreliminaries/reduce_het_dict.txt -OH -HIS -NOADJust -NOROTMET" % (ppdx.FIREDOCK, ppdx.FIREDOCK)
+    ret = ppdx.tools.execute(fd_reduce+' receptor_firedock_noh.pdb >firedock_receptor.pdb 2>firedock_reduce_receptor.out')
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("FireDock reduce receptor failed!")
-    ret = ppdg.tools.execute(fd_reduce+' ligand_firedock_noh.pdb >firedock_ligand.pdb 2>firedock_reduce_ligand.out')
+    ret = ppdx.tools.execute(fd_reduce+' ligand_firedock_noh.pdb >firedock_ligand.pdb 2>firedock_reduce_ligand.out')
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("FireDock reduce ligand failed!")
@@ -38,11 +38,11 @@ def firedock(wrkdir):
     # Score
     with open('firedock.trans', 'w') as fp:
         fp.write("1 0.0 0.0 0.0 0.0 0.0 0.0")
-    ret = ppdg.tools.execute("%s/buildFireDockParams.pl firedock_receptor.pdb firedock_ligand.pdb U U Default firedock.trans firedock_build.out 1 50 0.85 0 firedock_parameters.dat >firedock_build.err 2>&1" % ppdg.FIREDOCK)
+    ret = ppdx.tools.execute("%s/buildFireDockParams.pl firedock_receptor.pdb firedock_ligand.pdb U U Default firedock.trans firedock_build.out 1 50 0.85 0 firedock_parameters.dat >firedock_build.err 2>&1" % ppdx.FIREDOCK)
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("FireDock build param failed!")
-    ret = ppdg.tools.execute("%s/runFireDock.pl firedock_parameters.dat >firedock.log 2>&1" % (ppdg.FIREDOCK))
+    ret = ppdx.tools.execute("%s/runFireDock.pl firedock_parameters.dat >firedock.log 2>&1" % (ppdx.FIREDOCK))
     if ret!=0:
         os.chdir(basepath)
         raise ValueError("FireDock scoring failed!")
@@ -73,6 +73,6 @@ def firedock(wrkdir):
     return desc
 
 if __name__=='__main__':
-    ppdg.config.cread('config-ppdg.ini')
+    ppdx.config.cread('config-ppdx.ini')
     print(firedock(sys.argv[1]))
 

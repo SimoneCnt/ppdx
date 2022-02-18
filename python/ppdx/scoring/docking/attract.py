@@ -3,7 +3,7 @@
 import os, sys
 import numpy as np
 from timeit import default_timer as timer
-import ppdg
+import ppdx
 import logging
 log = logging.getLogger(__name__)
 
@@ -29,18 +29,18 @@ def attract(wrkdir):
 
     # List of commands to execute
     cmds = [
-        "%s/bin/shm-clean >/dev/null 2>&1" % (ppdg.ATTRACT),
-        "python2 %s/allatom/aareduce.py receptor.pdb receptor-aa.pdb --chain A --pdb2pqr >attract_receptor_reduce.out 2>&1" % (ppdg.ATTRACT),
-        "python2 %s/tools/reduce.py receptor-aa.pdb receptorr.pdb --chain A >attract_receptor_reduce2.out 2>&1" % (ppdg.ATTRACT),
-        "python2 %s/allatom/aareduce.py ligand.pdb ligand-aa.pdb --chain B --pdb2pqr >attract_ligand_reduce.out 2>&1" % (ppdg.ATTRACT),
-        "python2 %s/tools/reduce.py ligand-aa.pdb ligandr.pdb --chain B >attract_ligand_reduce2.out" % (ppdg.ATTRACT),
-        "%s/bin/attract attract.dat %s/attract.par receptorr.pdb ligandr.pdb --score --fix-receptor --rcut 50.0 >attract.score 2>&1" % (ppdg.ATTRACT, ppdg.ATTRACT),
-        "%s/bin/shm-clean >/dev/null 2>&1" % (ppdg.ATTRACT)
+        "%s/bin/shm-clean >/dev/null 2>&1" % (ppdx.ATTRACT),
+        "python2 %s/allatom/aareduce.py receptor.pdb receptor-aa.pdb --chain A --pdb2pqr >attract_receptor_reduce.out 2>&1" % (ppdx.ATTRACT),
+        "python2 %s/tools/reduce.py receptor-aa.pdb receptorr.pdb --chain A >attract_receptor_reduce2.out 2>&1" % (ppdx.ATTRACT),
+        "python2 %s/allatom/aareduce.py ligand.pdb ligand-aa.pdb --chain B --pdb2pqr >attract_ligand_reduce.out 2>&1" % (ppdx.ATTRACT),
+        "python2 %s/tools/reduce.py ligand-aa.pdb ligandr.pdb --chain B >attract_ligand_reduce2.out" % (ppdx.ATTRACT),
+        "%s/bin/attract attract.dat %s/attract.par receptorr.pdb ligandr.pdb --score --fix-receptor --rcut 50.0 >attract.score 2>&1" % (ppdx.ATTRACT, ppdx.ATTRACT),
+        "%s/bin/shm-clean >/dev/null 2>&1" % (ppdx.ATTRACT)
     ]
 
     # Exec everything...
     for cmd in cmds:
-        ret = ppdg.tools.execute(cmd)
+        ret = ppdx.tools.execute(cmd)
         if ret!=0:
             os.chdir(basepath)
             raise ValueError("ATTRACT command failed!\n<%s>" % (cmd))
@@ -54,6 +54,6 @@ def attract(wrkdir):
     return desc
 
 if __name__=='__main__':
-    ppdg.config.cread('config-ppdg.ini')
+    ppdx.config.cread('config-ppdx.ini')
     print(attract(sys.argv[1]))
 
