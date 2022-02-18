@@ -13,5 +13,6 @@ setup(
     license = 'GPLv3',
     packages = find_packages(),
     package_data = {'ppdg': ['data/*']},
+    install_requires = ['numpy', 'matplotlib', 'biopython', 'joblib', 'parsl', 'mdtraj', 'sklearn']
 )
 
