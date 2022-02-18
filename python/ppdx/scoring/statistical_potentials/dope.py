@@ -14,6 +14,7 @@ def dope(wrkdir):
             no. 11, pp. 2507-2524, 2006.
     """
     import modeller
+    import modeller.scripts
     time_start = timer()
     log.info("Getting DOPE and DOPE-HR scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')

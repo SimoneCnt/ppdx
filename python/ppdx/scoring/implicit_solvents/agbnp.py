@@ -41,6 +41,7 @@ def agbnp(wrkdir):
             pp. 479-499, 2004.
     """
     import modeller
+    import modeller.scripts
     time_start = timer()
     log.info("Getting AGBNP scoring...")
     cpx = os.path.join(wrkdir, 'complexAB.pdb')

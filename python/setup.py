@@ -12,7 +12,7 @@ setup(
     author_email = 'simonecnt@gmail.com',
     license = 'GPLv3',
     packages = find_packages(),
-    package_data = {'ppdg': ['data/*']},
+    package_data = {'ppdx': ['data/*']},
     install_requires = ['numpy', 'matplotlib', 'biopython', 'joblib', 'parsl', 'mdtraj', 'sklearn']
 )
 

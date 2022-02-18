@@ -279,6 +279,24 @@ def _save(name, protocol, nmodel, scores):
     return
 
 
+def save_descriptors_json(inputs, jname=None):
+    def getone(n):
+        wrkdir = os.path.join(ppdx.WRKDIR, n)
+        descfile = os.path.join(wrkdir, 'descriptors.json')
+        if not os.path.isfile(descfile):
+            raise ValueError("Missing file descriptors.json in directory %s\nBe sure to have called get_descriptors before!" % (wrkdir))
+        with open(descfile, 'r') as fp:
+            desc = { n : json.load(fp) }
+        return desc
+    res = dict()
+    for name, _, _, _ in inputs:
+        res.update(getone(name))
+    if jname:
+        with open(jname, 'w') as fp:
+            json.dump(res, fp, indent=4, sort_keys=True)
+    return res
+
+
 def clean(wrkdir=None):
     # List of files generated during model construction and evaluation of the descriptors.
     # Commented file names should be kept, uncommented ones can be deleted without problems.

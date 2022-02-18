@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+example-1brs/models/
+example-flu/models/
+example-hiv-breadth/models/
+

@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
 from .pdb import Pdb
-from .compute import eval_descriptors, get_descriptors, eval_pkl, compute_core, clean
+from .compute import eval_descriptors, get_descriptors, eval_pkl, compute_core, save_descriptors_json, clean
 
 from . import config
 from . import tools
 from . import makemodel
 from . import scoring
-
 
 # Manage scripts and data in data/
 import os

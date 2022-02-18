@@ -7,26 +7,8 @@ import logging
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(process)s - %(message)s')
 
-import ppdg
-ppdg.config.cread('config-ppdg.ini')
-
-def save_descriptors_json(inputs, jname=None):
-    def getone(n):
-        wrkdir = os.path.join(ppdg.WRKDIR, n)
-        descfile = os.path.join(wrkdir, 'descriptors.json')
-        if not os.path.isfile(descfile):
-            raise ValueError("Missing file descriptors.json in directory %s\nBe sure to have called get_descriptors before!" % (wrkdir))
-        with open(descfile, 'r') as fp:
-            desc = { n : json.load(fp) }
-        return desc
-
-    res = dict()
-    for name, _, _, _ in inputs:
-        res.update(getone(name))
-    if jname:
-        with open(jname, 'w') as fp:
-            json.dump(res, fp, indent=4, sort_keys=True)
-    return res
+import ppdx
+ppdx.config.cread('config-ppdx.ini')
 
 
 def compute(dbpath, nmodels=12, config='pool:12', protocol='modeller_fast'):
@@ -68,12 +50,9 @@ def compute(dbpath, nmodels=12, config='pool:12', protocol='modeller_fast'):
     # Binding
     desc += ['Prodigy_IC_NIS']
 
-    #### If you want all descriptors you can call:
-    #desc = ppdg.scoring.all_descriptors()
-
     # Prepare list of what to compute
     inputs = list()
-    sequences = ppdg.tools.read_multi_fasta('ppdb/ppdb.seq')
+    sequences = ppdx.tools.read_multi_fasta('ppdb/ppdb.seq')
     with open('ppdb/ppdb.txt') as fp:
         for line in fp:
             if line[0]=='#':
@@ -85,13 +64,13 @@ def compute(dbpath, nmodels=12, config='pool:12', protocol='modeller_fast'):
             inputs.append([name, sequence, nchains, template])
 
     # Compute the descriptors
-    ppdg.eval_descriptors(protocol, desc, inputs, nmodels=nmodels, config=config)
-    save_descriptors_json(inputs, 'descriptors-all.json')
+    ppdx.eval_descriptors(protocol, desc, inputs, nmodels=nmodels, config=config)
+    ppdx.save_descriptors_json(inputs, 'descriptors-all.json')
 
 
 if __name__=='__main__':
-    ppdg.WRKDIR = "/home/simone/tmp/models-1brs/"
+    ppdx.WRKDIR = os.path.join(os.getcwd(), "models")
     for protocol in ['modeller_fast', 'modeller_veryfast', 'modeller_slow', 'rosetta']:
         compute('ppdb/', nmodels=1, config='serial', protocol=protocol)
-        ppdg.clean()
+        ppdx.clean()
 

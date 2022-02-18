@@ -6,19 +6,20 @@ import logging
 log = logging.getLogger(__name__)
 
 def get_omm_ener(name, solvent):
-    import openmm as omm
+    import openmm
+    import openmm.app
     import openmm.unit as unit
-    if solvent=='HCT': solvent=omm.HCT
-    if solvent=='OBC1': solvent=omm.OBC1
-    if solvent=='OBC2': solvent=omm.OBC2
-    if solvent=='GBn': solvent=omm.GBn
-    if solvent=='GBn2': solvent=omm.GBn2
-    psf    = omm.app.CharmmPsfFile(name+'-chm.psf')
-    pdb    = omm.app.PDBFile(name+'-chm.pdb')
-    params = omm.app.CharmmParameterSet('/home/simone/opt/ff/charmmff_jul18.prm')
+    if solvent=='HCT': solvent=openmm.app.HCT
+    if solvent=='OBC1': solvent=openmm.app.OBC1
+    if solvent=='OBC2': solvent=openmm.app.OBC2
+    if solvent=='GBn': solvent=openmm.app.GBn
+    if solvent=='GBn2': solvent=openmm.app.GBn2
+    psf    = openmm.app.CharmmPsfFile(name+'-chm.psf')
+    pdb    = openmm.app.PDBFile(name+'-chm.pdb')
+    params = openmm.app.CharmmParameterSet('/home/simone/opt/ff/charmmff_jul18.prm')
     system = psf.createSystem(
                 params,
-                nonbondedMethod = omm.CutoffNonPeriodic,
+                nonbondedMethod = openmm.app.CutoffNonPeriodic,
                 nonbondedCutoff = 18*unit.angstrom,
                 constraints     = None,
                 rigidWater      = True,
@@ -27,10 +28,10 @@ def get_omm_ener(name, solvent):
                 soluteDielectric= 1.0,
                 solventDielectric= 80.0
             )
-    integrator = omm.LangevinIntegrator(300*unit.kelvin, 1/unit.picosecond, 2*unit.femtosecond)
-    platform = omm.Platform.getPlatformByName('CUDA')
+    integrator = openmm.LangevinIntegrator(300*unit.kelvin, 1/unit.picosecond, 2*unit.femtosecond)
+    platform = openmm.Platform.getPlatformByName('CUDA')
     properties = {'CudaPrecision': "double" , "CudaDeviceIndex" : "0"}
-    simulation = omm.Simulation(psf.topology, system, integrator, platform, properties)
+    simulation = openmm.app.Simulation(psf.topology, system, integrator, platform, properties)
     simulation.context.setPositions(pdb.positions)
     simulation.minimizeEnergy(maxIterations=100)
     ener = simulation.context.getState(getEnergy=True).getPotentialEnergy().value_in_unit(unit.kilocalorie_per_mole)

@@ -15,6 +15,7 @@ def soap_pp(wrkdir):
             pp. 3158-3166, 2013.
     """
     import modeller
+    import modeller.scripts
     import modeller.soap_pp
 
     time_start = timer()
@@ -51,6 +52,7 @@ def soap_protein_od(wrkdir):
             pp. 3158-3166, 2013.
     """
     import modeller
+    import modeller.scripts
     import modeller.soap_protein_od
     log.info('Reading SOAP Protein OD Scorer...')
     soap_protein_od = modeller.soap_protein_od.Scorer()
