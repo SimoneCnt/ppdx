@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import ppdg
+import ppdx
 
 import Bio.Seq
 def seq_nt2aa(seq_nt):
@@ -13,9 +13,9 @@ def seq_nt2aa(seq_nt):
 def main():
 
     # Read sequences and database
-    sequences_ag = ppdg.tools.read_multi_fasta('ag-cleaned.seq')
-    sequences_ab = ppdg.tools.read_multi_fasta('kallewaard.seq')
-    sequences_ab.update(ppdg.tools.read_multi_fasta('corti.seq'))
+    sequences_ag = ppdx.tools.read_multi_fasta('ag-cleaned.seq')
+    sequences_ab = ppdx.tools.read_multi_fasta('kallewaard.seq')
+    sequences_ab.update(ppdx.tools.read_multi_fasta('corti.seq'))
 
     # Check that the length of the nucleotide sequence is a multiple of 3
     # Some VH sequences had an extra G at the end

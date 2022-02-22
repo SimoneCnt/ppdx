@@ -2,16 +2,16 @@
 # HIV breadth example
 
 This is an example on how to compute the breadth of the VRC01 and VRC01GL
-antibodies using `ppdg`.  The breadth is computed as the fraction of antigens in
+antibodies using `ppdx`.  The breadth is computed as the fraction of antigens in
 the Seaman panel for which the binding affinity is stronger than a given cutoff.
 The details of the scoring function are stored in a `pkl` file.
 
 To run this example script:
- 1. Install ppdg 
- 2. Edit the `ppdg-configure.ini` file with the correct paths
+ 1. Install ppdx 
+ 2. Edit the `ppdx-configure.ini` file with the correct paths
  3. Run the `hiv-breadth.py` file
 
-`ppdg` keeps all intermediate and computed data stored on disk, so a second run is
+`ppdx` keeps all intermediate and computed data stored on disk, so a second run is
 much faster than the first since all structures and descriptors are already
 computed.
 

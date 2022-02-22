@@ -10,7 +10,7 @@ is directly from 1BRS.  The file `ppdb.txt` just list the name of the complex
 receptor, the binding affinity (just a placeholder in this case), and the name
 of the template file.
 
-The file `config-ppdg.ini` helps configure ppdg, indicating where to find all
+The file `config-ppdx.ini` helps configure ppdx, indicating where to find all
 executables or scripts. Not all of these are needed, it depends on which
 descriptors you want to compute.  The python script `compute_descriptors.py`
 read the protein-protein info from the ppdb directory and compute the

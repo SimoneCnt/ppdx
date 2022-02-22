@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import ppdg
+import ppdx
 
 import logging
 log = logging.getLogger(__name__)
@@ -9,9 +9,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 
 def main():
 
-    ppdg.config.cread('config-ppdg.ini')
-    ppdg.WRKDIR = os.path.join(os.getcwd(), "models")
-    ppdg.clean()
+    ppdx.config.cread('config-ppdx.ini')
+    ppdx.WRKDIR = os.path.join(os.getcwd(), "models")
+    ppdx.clean()
     log.info("Finished!")
 
 main()

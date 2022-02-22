@@ -11,6 +11,29 @@ import ppdx
 ppdx.config.cread('config-ppdx.ini')
 
 
+## Setting up parsl for local execution using max of 2 threads
+import parsl
+from parsl.providers import LocalProvider
+from parsl.channels import LocalChannel
+from parsl.config import Config
+from parsl.executors import HighThroughputExecutor
+local_htex = Config(
+    executors=[
+        HighThroughputExecutor(
+            label="htex_Local",
+            cores_per_worker=1,
+            max_workers=2,
+            provider=LocalProvider(
+                channel=LocalChannel(),
+                init_blocks=1,
+                max_blocks=1,
+            ),
+        )
+    ],
+    strategy=None,
+)
+
+
 def compute(dbpath, nmodels=12, config='pool:12', protocol='modeller_fast'):
 
     # Create list of descriptors to compute
@@ -59,7 +82,7 @@ def compute(dbpath, nmodels=12, config='pool:12', protocol='modeller_fast'):
                 continue
             name, recn, lign, dgexp, tpl = line.split()
             sequence = sequences[name]
-            template = '%s/%s' % (dbpath, tpl)
+            template = os.path.join(dbpath, tpl)
             nchains = (int(recn), int(lign))
             inputs.append([name, sequence, nchains, template])
 
@@ -70,7 +93,14 @@ def compute(dbpath, nmodels=12, config='pool:12', protocol='modeller_fast'):
 
 if __name__=='__main__':
     ppdx.WRKDIR = os.path.join(os.getcwd(), "models")
-    for protocol in ['modeller_fast', 'modeller_veryfast', 'modeller_slow', 'rosetta']:
-        compute('ppdb/', nmodels=1, config='serial', protocol=protocol)
-        ppdx.clean()
+    print("Serial - Modeller Fast")
+    compute(os.path.join(os.getcwd(), 'ppdb'), nmodels=1, config='serial',  protocol='modeller_fast')
+    print("Pool - Modeller VeryFast")
+    compute(os.path.join(os.getcwd(), 'ppdb'), nmodels=4, config='pool:12', protocol='modeller_veryfast')
+    print("Serial - Rosetta")
+    compute(os.path.join(os.getcwd(), 'ppdb'), nmodels=1, config='serial', protocol='rosetta')
+    print("Parsl - Modeller Slow")
+    parsl.load(local_htex)
+    compute(os.path.join(os.getcwd(), 'ppdb'), nmodels=4, config='parsl',   protocol='modeller_slow')
+    ppdx.clean()
 
