@@ -5,9 +5,6 @@ import configparser
 import ppdx
 
 def cread(fname):
-    '''
-        Set some needed variables.
-    '''
     defaults = dict(
             WRKDIR      = os.path.join(os.getcwd(), 'models'),
             ZRANK       = "",
@@ -39,12 +36,18 @@ def cread(fname):
     ppdx.ROSETTA = config.get('ppdx', 'ROSETTA')
     ppdx.ROSETTABIN = config.get('ppdx', 'ROSETTABIN')
 
-
 def cget():
     config = dict()
     config['WRKDIR']     = ppdx.WRKDIR
+    config['ZRANK']      = ppdx.ZRANK
     config['RFSPP']      = ppdx.RFSPP
+    config['FOLDX']      = ppdx.FOLDX
+    config['IPOT']       = ppdx.IPOT
+    config['PYDOCK']     = ppdx.PYDOCK
     config['CHARMM']     = ppdx.CHARMM
+    config['ATTRACT']    = ppdx.ATTRACT
+    config['FIREDOCK']   = ppdx.FIREDOCK
+    config['PDBDIR']     = ppdx.PDBDIR
     config['FFPATH']     = ppdx.FFPATH
     config['ROSETTA']    = ppdx.ROSETTA
     config['ROSETTABIN'] = ppdx.ROSETTABIN
@@ -52,8 +55,15 @@ def cget():
 
 def cset(config):
     ppdx.WRKDIR     = config['WRKDIR']
+    ppdx.ZRANK      = config['ZRANK']
     ppdx.RFSPP      = config['RFSPP']
+    ppdx.FOLDX      = config['FOLDX']
+    ppdx.IPOT       = config['IPOT']
+    ppdx.PYDOCK     = config['PYDOCK']
     ppdx.CHARMM     = config['CHARMM']
+    ppdx.ATTRACT    = config['ATTRACT']
+    ppdx.FIREDOCK   = config['FIREDOCK']
+    ppdx.PDBDIR     = config['PDBDIR']
     ppdx.FFPATH     = config['FFPATH']
     ppdx.ROSETTA    = config['ROSETTA']
     ppdx.ROSETTABIN = config['ROSETTABIN']
