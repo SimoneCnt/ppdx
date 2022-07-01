@@ -18,6 +18,7 @@ def all_descriptors():
     desc += ['BSA', 'BSA_C', 'BSA_A', 'BSA_P', 'NIS_P', 'NIS_C', 'NIS_A', 'NRES']
     desc += ['sticky_tot', 'sticky_avg']
     desc += ['IC_TOT', 'IC_AA', 'IC_PP', 'IC_CC', 'IC_AP', 'IC_CP', 'IC_AC']
+    desc += ['TMscore']
     # Docking
     desc += ['ZRANK', 'ZRANK2']
     desc += ['pyDock', 'pyDock_elec', 'pyDock_vdw', 'pyDock_desolv']
@@ -57,9 +58,6 @@ def evaluate(wrkdir, desc_wanted, scores=dict(), force_calc=False):
     for desc in desc_wanted:
         if desc not in scores.keys() or force_calc:
             desc_set.add(desc)
-    #print('Wanted : ', desc_wanted)
-    #print('Have   : ', scores.keys())
-    #print('Calc   : ', desc_set)
 
     if len(desc_set)>0:
         log.info('Computing new descriptors in %s' % (wrkdir))
@@ -73,6 +71,8 @@ def evaluate(wrkdir, desc_wanted, scores=dict(), force_calc=False):
         scores.update(molecular.stickiness(wrkdir))
     if len(desc_set & set(['IC_TOT', 'IC_AA', 'IC_PP', 'IC_CC', 'IC_AP', 'IC_CP', 'IC_AC']))>0:
         scores.update(molecular.intermolecular_contacts(wrkdir))
+    if 'TMscore' in desc_set:
+        scores.update(molecular.tmscore(wrkdir))
 
     # Docking scores
     if 'ZRANK' in desc_set:
@@ -87,7 +87,6 @@ def evaluate(wrkdir, desc_wanted, scores=dict(), force_calc=False):
         'FireDock_aElec', 'FireDock_rElec', 'FireDock_laElec', 'FireDock_lrElec', 'FireDock_hb', 
         'FireDock_piS', 'FireDock_catpiS', 'FireDock_aliph']))>0:
         scores.update(docking.firedock(wrkdir))
-
 
     # Statistical Potentials
     if 'RF_HA_SRS' in desc_set:

@@ -18,7 +18,8 @@ def cread(fname):
             PDBDIR      = "",
             FFPATH      = "",
             ROSETTA     = "",
-            ROSETTABIN  = ""
+            ROSETTABIN  = "",
+            TMALIGN     = ""
         )
     config = configparser.ConfigParser(defaults)
     config.read(fname)
@@ -35,6 +36,7 @@ def cread(fname):
     ppdx.FFPATH = config.get('ppdx', 'FFPATH')
     ppdx.ROSETTA = config.get('ppdx', 'ROSETTA')
     ppdx.ROSETTABIN = config.get('ppdx', 'ROSETTABIN')
+    ppdx.TMALIGN = config.get('ppdx', 'TMALIGN')
 
 def cget():
     config = dict()
@@ -51,6 +53,7 @@ def cget():
     config['FFPATH']     = ppdx.FFPATH
     config['ROSETTA']    = ppdx.ROSETTA
     config['ROSETTABIN'] = ppdx.ROSETTABIN
+    config['TMALIGN']    = ppdx.TMALIGN
     return config
 
 def cset(config):
@@ -67,6 +70,7 @@ def cset(config):
     ppdx.FFPATH     = config['FFPATH']
     ppdx.ROSETTA    = config['ROSETTA']
     ppdx.ROSETTABIN = config['ROSETTABIN']
+    ppdx.TMALIGN    = config['TMALIGN']
     return
 
 def cprint():
