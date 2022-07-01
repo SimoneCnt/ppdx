@@ -1,0 +1,4 @@
+modeller_veryfast         1.704    0.390
+modeller_fast             3.577    0.612
+modeller_slow             9.748    1.530
+rosetta                 187.484   19.730

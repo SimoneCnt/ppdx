@@ -44,7 +44,7 @@ def main():
     desc = set()
     for cpx, cpxdata in alldata.items():
         desc |= set(cpxdata[protocol].keys())
-    desc = [ d for d in desc if not d.startswith('>') and d!='NRES' and d!='AGBNP' and d!='GBMV_POL' and d!='SOAP-Protein-OD' ]
+    desc = sorted([ d for d in desc if not d.startswith('>') and d!='NRES' and d!='AGBNP' and d!='GBMV_POL' and d!='SOAP-Protein-OD' ])
     print('Number of descriptors:', len(desc))
     cpxs = [ c for c in alldata.keys() if c.startswith('FY')]
 

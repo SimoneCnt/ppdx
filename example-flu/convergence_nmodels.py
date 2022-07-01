@@ -48,6 +48,7 @@ def main():
         plt.xticks([4,8,12,16,20])
         for name, data in alldata.items():
             if desc not in data[protocol].keys(): continue
+            if not name.startswith('FY'): continue
             v = data[protocol][desc]
             nmax = max([ int(k) for k in v.keys() ])+1
             vals = np.empty((nmax), dtype=float)

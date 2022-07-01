@@ -14,7 +14,9 @@ for cpx in data.keys():
     for protocol in data[cpx].keys():
         avgs[cpx][protocol] = dict()
         for desc in data[cpx][protocol].keys():
-            avgs[cpx][protocol][desc] = np.average(list(data[cpx][protocol][desc].values()))
+            tmp = list(data[cpx][protocol][desc].values())
+            if len(tmp)>15:
+                avgs[cpx][protocol][desc] = np.average(tmp)
 with open('descriptors-avg.json', 'w') as fp:
     json.dump(avgs, fp, indent=4, sort_keys=True)
 
