@@ -129,7 +129,13 @@ dmypy.json
 .pyre/
 
 
-example-1brs/models/
-example-flu/models/
-example-hiv-breadth/models/
+example-*/models/
+example-*/runinfo/
 
+example-flu/rf.joblib
+example-flu/ppdb/kallewaard.pdf
+example-flu/ppdb/science.1205669.pdf
+
+example-skempi-itc/skempi/PDBs/
+example-skempi-itc/skempi/SKEMPI2_PDBs.tgz
+example-skempi-itc/skempi/gdata.ods
